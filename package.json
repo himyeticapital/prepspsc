@@ -42,7 +42,7 @@
     "@remotion/bundler": "^4.0.435",
     "@remotion/cli": "^4.0.435",
     "@remotion/renderer": "^4.0.435",
-    "@supabase/ssr": "^0.8.0",
+    "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.90.1",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.36.1",
