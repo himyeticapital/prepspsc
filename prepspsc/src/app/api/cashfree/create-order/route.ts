@@ -152,7 +152,7 @@ export async function POST(request: Request) {
     // Save order to database (reusing razorpay columns for Cashfree IDs)
     await supabase.from("payments").insert({
       user_id: user.id,
-      razorpay_order_id: orderId,
+      cashfree_order_id: orderId,
       amount: plan.amount * 100, // Store in paise for consistency
       currency: plan.currency,
       status: "created",

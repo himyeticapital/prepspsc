@@ -107,10 +107,10 @@ export async function POST(request: Request) {
     await supabase
       .from("payments")
       .update({
-        razorpay_payment_id: cfData.cf_order_id?.toString() || orderId,
+        cashfree_payment_id: cfData.cf_order_id?.toString() || orderId,
         status: "paid",
       })
-      .eq("razorpay_order_id", orderId);
+      .eq("cashfree_order_id", orderId);
 
     // Update user profile to Pro with gamification benefits
     await supabase

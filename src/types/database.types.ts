@@ -626,8 +626,8 @@ export type Database = {
         Row: {
           id: number;
           user_id: string;
-          razorpay_order_id: string | null;
-          razorpay_payment_id: string | null;
+          cashfree_order_id: string | null;
+          cashfree_payment_id: string | null;
           amount: number | null;
           currency: string;
           status: string | null;
@@ -637,8 +637,8 @@ export type Database = {
         Insert: {
           id?: number;
           user_id: string;
-          razorpay_order_id?: string | null;
-          razorpay_payment_id?: string | null;
+          cashfree_order_id?: string | null;
+          cashfree_payment_id?: string | null;
           amount?: number | null;
           currency?: string;
           status?: string | null;
@@ -648,8 +648,8 @@ export type Database = {
         Update: {
           id?: number;
           user_id?: string;
-          razorpay_order_id?: string | null;
-          razorpay_payment_id?: string | null;
+          cashfree_order_id?: string | null;
+          cashfree_payment_id?: string | null;
           amount?: number | null;
           currency?: string;
           status?: string | null;
