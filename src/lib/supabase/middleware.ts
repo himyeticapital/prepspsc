@@ -41,8 +41,10 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith(route)
   );
 
-  // Admin protected routes (all /admin/* routes require auth)
-  const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
+  // Admin protected routes: /admin and /admin/*. Not /admin-auth/*, which is the
+  // admin login itself (matching it here sent signed-out visitors into a redirect loop).
+  const pathname = request.nextUrl.pathname;
+  const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
 
   // Protected routes (excluding admin which has its own handling)
   const protectedRoutes = ["/dashboard", "/tests", "/test", "/room", "/rooms", "/bookmarks", "/profile", "/leaderboard", "/notes", "/results", "/study-ai", "/test-analytics"];
