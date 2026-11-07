@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 
 declare global {
   interface Window {
@@ -30,55 +30,60 @@ interface TurnstileProps {
 
 export function Turnstile({ onVerify, onError, onExpire, className }: TurnstileProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const widgetIdRef = useRef<string | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  // True straight away when another page already loaded the Turnstile script.
+  // This only gates an effect, never the markup, so it can't cause a hydration mismatch.
+  const [isLoaded, setIsLoaded] = useState(
+    () => typeof window !== "undefined" && !!window.turnstile
+  );
 
-  const stableOnVerify = useCallback(onVerify, [onVerify]);
-
-  const handleExpire = useCallback(() => {
-    // Reset widget to get a fresh token
-    if (widgetIdRef.current && window.turnstile) {
-      window.turnstile.reset(widgetIdRef.current);
-    }
-    onExpire?.();
-  }, [onExpire]);
+  // Pages pass fresh inline callbacks on every render (typing, OTP countdowns).
+  // Keep the latest ones in refs so the widget is created once per mount
+  // instead of being torn down and restarted ("Verifying...") on every render.
+  const onVerifyRef = useRef(onVerify);
+  const onErrorRef = useRef(onError);
+  const onExpireRef = useRef(onExpire);
+  useEffect(() => {
+    onVerifyRef.current = onVerify;
+    onErrorRef.current = onError;
+    onExpireRef.current = onExpire;
+  });
 
   useEffect(() => {
-    if (!document.querySelector('script[src*="turnstile"]')) {
-      const script = document.createElement("script");
-      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-      script.async = true;
-      script.onload = () => setIsLoaded(true);
-      document.head.appendChild(script);
-    } else if (window.turnstile) {
-      setIsLoaded(true);
-    }
-  }, []);
+    if (isLoaded) return;
+    const markLoaded = () => setIsLoaded(true);
+    const script =
+      document.querySelector<HTMLScriptElement>('script[src*="turnstile"]') ??
+      document.head.appendChild(
+        Object.assign(document.createElement("script"), {
+          src: "https://challenges.cloudflare.com/turnstile/v0/api.js",
+          async: true,
+        })
+      );
+    // Also covers a script another component added that is still loading.
+    script.addEventListener("load", markLoaded);
+    return () => script.removeEventListener("load", markLoaded);
+  }, [isLoaded]);
 
   useEffect(() => {
     if (!isLoaded || !containerRef.current || !window.turnstile) return;
 
-    // Avoid double-render
-    if (widgetIdRef.current) {
-      window.turnstile.remove(widgetIdRef.current);
-    }
-
-    widgetIdRef.current = window.turnstile.render(containerRef.current, {
+    const widgetId = window.turnstile.render(containerRef.current, {
       sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!,
-      callback: stableOnVerify,
-      "error-callback": onError,
-      "expired-callback": handleExpire,
+      callback: (token) => onVerifyRef.current(token),
+      "error-callback": () => onErrorRef.current?.(),
+      "expired-callback": () => {
+        // Reset widget to get a fresh token
+        window.turnstile?.reset(widgetId);
+        onExpireRef.current?.();
+      },
       theme: "dark",
       size: "normal",
     });
 
     return () => {
-      if (widgetIdRef.current && window.turnstile) {
-        window.turnstile.remove(widgetIdRef.current);
-        widgetIdRef.current = null;
-      }
+      window.turnstile?.remove(widgetId);
     };
-  }, [isLoaded, stableOnVerify, onError, handleExpire]);
+  }, [isLoaded]);
 
   return <div ref={containerRef} className={className} />;
 }
