@@ -8,9 +8,13 @@ on:
 
 jobs:
   # GitGuardian: Scan for leaked secrets in commits
+  # Each scan runs only when its key is set in the repo's Actions secrets.
+  # Pull requests from forks never receive secrets, so they skip the scan instead of failing.
   gitguardian:
     name: GitGuardian Secret Scan
     runs-on: ubuntu-latest
+    env:
+      GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -18,14 +22,19 @@ jobs:
           fetch-depth: 0 # Full history for secret scanning
 
       - name: GitGuardian Scan
+        if: env.GITGUARDIAN_API_KEY != ''
         uses: GitGuardian/ggshield-action@v1
-        env:
-          GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
+
+      - name: GitGuardian skipped
+        if: env.GITGUARDIAN_API_KEY == ''
+        run: echo "::notice::GITGUARDIAN_API_KEY is not set; secret scan skipped."
 
   # Snyk: Scan for vulnerable dependencies
   snyk:
     name: Snyk Dependency Scan
     runs-on: ubuntu-latest
+    env:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,8 +49,11 @@ jobs:
         run: npm ci
 
       - name: Run Snyk to check for vulnerabilities
+        if: env.SNYK_TOKEN != ''
         uses: snyk/actions/node@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --severity-threshold=high
+
+      - name: Snyk skipped
+        if: env.SNYK_TOKEN == ''
+        run: echo "::notice::SNYK_TOKEN is not set; dependency scan skipped."
