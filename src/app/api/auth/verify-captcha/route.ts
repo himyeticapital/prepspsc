@@ -5,7 +5,9 @@ import { applyRateLimit } from "@/lib/rate-limit";
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting
-    const rateLimitResponse = await applyRateLimit(request, "auth");
+    const rateLimitResponse = await applyRateLimit(request, "auth", undefined, {
+      fallback: "local-auth",
+    });
     if (rateLimitResponse) return rateLimitResponse;
 
     const { token } = await request.json();

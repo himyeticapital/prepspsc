@@ -102,7 +102,7 @@ export async function POST(request: Request) {
       const { data: existingPayment } = await supabase
         .from("payments")
         .select("status")
-        .eq("razorpay_order_id", orderId)
+        .eq("cashfree_order_id", orderId)
         .single();
 
       if (existingPayment?.status === "paid") {
@@ -114,10 +114,10 @@ export async function POST(request: Request) {
       await supabase
         .from("payments")
         .update({
-          razorpay_payment_id: payment?.cf_payment_id?.toString() || orderId,
+          cashfree_payment_id: payment?.cf_payment_id?.toString() || orderId,
           status: "paid",
         })
-        .eq("razorpay_order_id", orderId);
+        .eq("cashfree_order_id", orderId);
 
       // Get current profile to handle renewals
       const { data: currentProfile } = await supabase
@@ -222,7 +222,7 @@ export async function POST(request: Request) {
       await supabase
         .from("payments")
         .update({ status: "failed" })
-        .eq("razorpay_order_id", orderId);
+        .eq("cashfree_order_id", orderId);
 
       console.log(`Payment failed for order ${orderId}`);
       return NextResponse.json({ success: true });
