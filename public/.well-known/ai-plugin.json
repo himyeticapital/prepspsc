@@ -1,0 +1,19 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "PrepSPSC PYQ Search & Reference",
+  "name_for_model": "prepspsc_pyq",
+  "description_for_human": "Search 7,400+ previous year questions from Indian competitive exams (Sikkim PSC/SPSC) with AI-powered semantic search. Use as a reference for generating new exam questions.",
+  "description_for_model": "Search a database of 7,400+ previous year questions (PYQs) from Indian competitive exams, specifically Sikkim Public Service Commission (SPSC). Use semantic search to find questions by topic, concept, or keyword. Returns questions with options, correct answers, explanations, topics, cognitive levels (remember/understand/apply/analyze), difficulty, and exam metadata. IMPORTANT: You can use these real PYQ questions as few-shot reference examples to generate new questions that match real exam patterns and standards. The API provides rich metadata including topics array, cognitive_level, difficulty, and high_yield flag — use these to calibrate your generated questions. Workflow: (1) GET /pyq-api/patterns for exam structure, (2) POST /pyq-api to fetch reference questions, (3) use your AI to generate fresh questions in the same format and standard.",
+  "auth": {
+    "type": "service_http",
+    "authorization_type": "bearer",
+    "verification_tokens": {}
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://prepspsc.com/openapi.yaml"
+  },
+  "logo_url": "https://prepspsc.com/icon-512.png",
+  "contact_email": "prepspsc@protonmail.com",
+  "legal_info_url": "https://prepspsc.com/terms"
+}

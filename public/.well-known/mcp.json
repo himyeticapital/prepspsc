@@ -1,0 +1,211 @@
+{
+  "name": "prepspsc-pyq",
+  "version": "5.0.0",
+  "description": "Search 7,400+ previous year questions from Sikkim PSC exams, generate mock tests across 64 exam patterns (Civil Services, Police, Medical, Engineering, Education, and more), track progress, access leaderboards, and use real PYQ data as a reference for AI-powered question generation. Returns rich metadata including topics, cognitive levels, and difficulty for training or prompting your own AI.",
+  "tools": [
+    {
+      "name": "search_pyq_questions",
+      "description": "Search previous year questions using semantic similarity. Returns MCQ questions with options, correct answers, explanations, topics, cognitive levels, and exam metadata. Use these as few-shot examples to guide your own AI in generating new questions that match real exam standards.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Natural language search query (e.g., 'Fundamental Rights Article 21', 'photosynthesis process', 'Sikkim history')",
+            "minLength": 3
+          },
+          "subject": {
+            "type": "string",
+            "description": "Subject to search within. Available: General English, Nepali Literature, General Knowledge, Geography, Science, History, Environment, Indian Polity, Indian Economy"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max results (1-20)",
+            "default": 5
+          },
+          "threshold": {
+            "type": "number",
+            "description": "Minimum similarity score 0-1 (lower = more results but less relevant)",
+            "default": 0.3
+          },
+          "year_min": {
+            "type": "integer",
+            "description": "Exclude time-sensitive questions (current affairs) older than this year. Defaults to current_year - 2. Set to null to include all years.",
+            "default": null
+          },
+          "exclude_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Question UUIDs to exclude (for pagination / 'show more')",
+            "default": []
+          }
+        },
+        "required": ["query", "subject"]
+      }
+    },
+    {
+      "name": "generate_mock_test",
+      "description": "Generate a complete mock test following real SPSC exam patterns. Returns sections with difficulty-balanced questions including topics, cognitive levels, and metadata. Use the returned questions as a reference to understand exam patterns, then optionally generate additional questions with your own AI to fill gaps or create fresh content.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "enum": [
+              "undersecretary-prelims", "si-police-prelims", "general-prelims", "spsc-mains-gs1", "spsc-mains-gs2", "junior-engineer-prelims", "forest-ranger-prelims", "quick-practice-30",
+              "combined-mains-gs3", "combined-mains-english", "sscs-prelims",
+              "si-police-mains", "si-excise", "sub-jailer",
+              "sub-fire-officer",
+              "assistant-engineer-civil", "assistant-engineer-electrical", "assistant-engineer-mechanical", "assistant-engineer-agriculture",
+              "gdmo", "veterinary-officer", "dental-surgeon", "specialist-sr-grade", "staff-nurse", "paramedical", "health-educator", "mphw", "drug-inspector", "food-safety-officer", "pharmacist-ayush", "yoga-instructor-ayush", "scientific-officer-ayush", "tutor-clinical-instructor",
+              "ldc-prelims", "accounts-clerk", "stenographer", "cooperative-inspector", "statistical-inspector", "revenue-inspector", "revenue-surveyor", "commercial-tax-inspector",
+              "fisheries-officer", "assistant-director-fisheries", "livestock-assistant",
+              "lecturer-diet", "iti-instructor", "principal-iti", "assistant-professor-sheda",
+              "assistant-town-planner", "assistant-architect", "assistant-geologist", "digital-analyst", "assistant-programmer", "assistant-director-it", "lab-assistant", "field-assistant", "ado-wdo-hdo", "senior-information-assistant", "sub-editor", "inspector-legal-metrology", "photographer", "script-writer", "feed-mill-operator", "printing-stationery"
+            ],
+            "description": "Exam pattern to follow (64 patterns available). Determines subject distribution, question count, duration, and marking scheme. Use list_exam_patterns to see all options."
+          },
+          "difficulty_mix": {
+            "type": "object",
+            "description": "Custom difficulty distribution (percentages). Defaults: 30% easy, 50% medium, 20% hard.",
+            "properties": {
+              "easy": { "type": "integer", "default": 30 },
+              "medium": { "type": "integer", "default": 50 },
+              "hard": { "type": "integer", "default": 20 }
+            }
+          },
+          "year_min": {
+            "type": "integer",
+            "description": "Exclude time-sensitive questions older than this year. Defaults to current_year - 2.",
+            "default": null
+          },
+          "exclude_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Question UUIDs to exclude (avoids repeating questions across tests)",
+            "default": []
+          }
+        },
+        "required": ["pattern"]
+      }
+    },
+    {
+      "name": "list_pyq_subjects",
+      "description": "List all available subjects and their question counts. Call this first to discover what subjects are searchable and how many reference questions are available per subject.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "list_exam_patterns",
+      "description": "List all available exam patterns for mock test generation. Returns pattern IDs, names, question distribution by subject, duration, and marking scheme. Use this to understand real exam structure for AI question generation.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "record_progress",
+      "description": "Record a user's answer to a question. Tracks which option was selected, whether it was correct, and time spent. Builds a complete answer history tied to your API key.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "external_user_id": { "type": "string", "description": "Your app's user identifier" },
+          "question_id": { "type": "string", "description": "UUID of the question answered" },
+          "selected_option": { "type": "string", "description": "Option selected (a, b, c, d)" },
+          "is_correct": { "type": "boolean", "description": "Whether the answer was correct" },
+          "time_spent_seconds": { "type": "integer", "description": "Time spent on the question (optional)" }
+        },
+        "required": ["external_user_id", "question_id", "selected_option", "is_correct"]
+      }
+    },
+    {
+      "name": "get_user_analytics",
+      "description": "Get performance analytics for a user: accuracy by subject, difficulty breakdown, recent activity trends, and overall stats.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "user_id": { "type": "string", "description": "Your app's user identifier" }
+        },
+        "required": ["user_id"]
+      }
+    },
+    {
+      "name": "get_leaderboard",
+      "description": "Get the leaderboard for your app's user base. Ranks users by correct answers and accuracy.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "integer", "default": 20, "description": "Max entries (1-100)" },
+          "time_range": { "type": "string", "enum": ["week", "month", "all_time"], "default": "all_time" }
+        }
+      }
+    },
+    {
+      "name": "manage_bookmarks",
+      "description": "Add, list, or remove bookmarked questions for a user. POST to add, GET to list, DELETE to remove.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "external_user_id": { "type": "string", "description": "Your app's user identifier" },
+          "question_id": { "type": "string", "description": "UUID of the question to bookmark/unbookmark" },
+          "note": { "type": "string", "description": "Optional note to attach to the bookmark" }
+        },
+        "required": ["external_user_id", "question_id"]
+      }
+    }
+  ],
+  "ai_generation_guide": {
+    "description": "This API is designed to be used as a reference for AI-powered question generation. Here's how to use it effectively:",
+    "steps": [
+      "1. Fetch exam patterns (list_exam_patterns) to understand subject distribution and exam structure",
+      "2. Search for reference questions (search_pyq_questions) on your target topic",
+      "3. Analyze the returned questions for: format, difficulty, cognitive_level, topics covered",
+      "4. Use the questions as few-shot examples in your AI prompt to generate new questions",
+      "5. Match the MCQ format: question text + 4 options (a,b,c,d) + correct_option_id + explanation"
+    ],
+    "question_format": {
+      "question": "The full question text",
+      "options": [
+        {"id": "a", "text": "Option A"},
+        {"id": "b", "text": "Option B"},
+        {"id": "c", "text": "Option C"},
+        {"id": "d", "text": "Option D"}
+      ],
+      "correct_option_id": "a|b|c|d",
+      "explanation": "Why the correct answer is correct",
+      "difficulty": "easy|medium|hard",
+      "cognitive_level": "remember|understand|apply|analyze",
+      "topics": ["Topic1", "Topic2"]
+    }
+  },
+  "api": {
+    "base_url": "https://qqqditxzghqzodvauxth.supabase.co/functions/v1/pyq-api",
+    "auth": {
+      "type": "bearer",
+      "description": "API key starting with sk_live_. Get a free key at https://prepspsc.com/developers"
+    }
+  },
+  "mcp_server": {
+    "description": "Local MCP server for Claude Code and MCP-compatible agents. 11 tools available.",
+    "setup": {
+      "command": "node",
+      "args": ["mcp-server/dist/index.js"],
+      "env": {
+        "PREPSPSC_API_KEY": "sk_live_YOUR_KEY"
+      }
+    },
+    "claude_code_config": {
+      "mcpServers": {
+        "prepspsc": {
+          "command": "node",
+          "args": ["mcp-server/dist/index.js"],
+          "env": {
+            "PREPSPSC_API_KEY": "sk_live_YOUR_KEY"
+          }
+        }
+      }
+    }
+  }
+}

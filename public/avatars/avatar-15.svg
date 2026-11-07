@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Cute Girl - Soft style, short hair, glasses -->
+  <defs>
+    <linearGradient id="bg15" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ddd6fe"/>
+      <stop offset="100%" style="stop-color:#c4b5fd"/>
+    </linearGradient>
+    <linearGradient id="hair15" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#78350f"/>
+      <stop offset="100%" style="stop-color:#451a03"/>
+    </linearGradient>
+    <linearGradient id="skin15" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fef3e2"/>
+      <stop offset="100%" style="stop-color:#fde6c4"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Soft purple background -->
+  <circle cx="50" cy="50" r="48" fill="url(#bg15)"/>
+
+  <!-- Short fluffy hair behind -->
+  <ellipse cx="50" cy="48" rx="28" ry="26" fill="url(#hair15)"/>
+  <circle cx="28" cy="52" r="8" fill="url(#hair15)"/>
+  <circle cx="72" cy="52" r="8" fill="url(#hair15)"/>
+
+  <!-- Neck -->
+  <rect x="44" y="70" width="12" height="12" rx="2" fill="url(#skin15)"/>
+
+  <!-- Face - round and soft -->
+  <ellipse cx="50" cy="52" rx="22" ry="23" fill="url(#skin15)"/>
+
+  <!-- Ears -->
+  <ellipse cx="28" cy="52" rx="4" ry="5" fill="#fde6c4"/>
+  <ellipse cx="72" cy="52" rx="4" ry="5" fill="#fde6c4"/>
+
+  <!-- Short fluffy hair on top -->
+  <ellipse cx="50" cy="34" rx="24" ry="14" fill="url(#hair15)"/>
+  <!-- Hair volume/texture -->
+  <circle cx="34" cy="36" r="8" fill="url(#hair15)"/>
+  <circle cx="50" cy="30" r="10" fill="url(#hair15)"/>
+  <circle cx="66" cy="36" r="8" fill="url(#hair15)"/>
+  <circle cx="40" cy="32" r="6" fill="url(#hair15)"/>
+  <circle cx="60" cy="32" r="6" fill="url(#hair15)"/>
+
+  <!-- Soft bangs -->
+  <path d="M32 44 Q38 38 44 44" fill="url(#hair15)"/>
+  <path d="M44 42 Q50 36 56 42" fill="url(#hair15)"/>
+  <path d="M56 44 Q62 38 68 44" fill="url(#hair15)"/>
+
+  <!-- Glasses frame -->
+  <rect x="30" y="48" width="16" height="12" rx="6" fill="none" stroke="#374151" stroke-width="2.5"/>
+  <rect x="54" y="48" width="16" height="12" rx="6" fill="none" stroke="#374151" stroke-width="2.5"/>
+  <!-- Bridge -->
+  <path d="M46 54 Q50 52 54 54" stroke="#374151" stroke-width="2.5" fill="none"/>
+  <!-- Temple arms -->
+  <line x1="30" y1="52" x2="26" y2="50" stroke="#374151" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="70" y1="52" x2="74" y2="50" stroke="#374151" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Eyes behind glasses -->
+  <ellipse cx="38" cy="54" rx="4" ry="4.5" fill="#1f2937"/>
+  <ellipse cx="62" cy="54" rx="4" ry="4.5" fill="#1f2937"/>
+  <!-- Eye shine -->
+  <circle cx="40" cy="52" r="1.5" fill="white"/>
+  <circle cx="64" cy="52" r="1.5" fill="white"/>
+
+  <!-- Soft eyebrows -->
+  <path d="M32 46 Q38 44 44 46" stroke="#5b3a1a" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M56 46 Q62 44 68 46" stroke="#5b3a1a" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- Rosy cheeks -->
+  <ellipse cx="30" cy="60" rx="5" ry="3" fill="#fca5a5" opacity="0.5"/>
+  <ellipse cx="70" cy="60" rx="5" ry="3" fill="#fca5a5" opacity="0.5"/>
+
+  <!-- Small nose -->
+  <ellipse cx="50" cy="60" rx="2" ry="1.5" fill="#edc9a8"/>
+
+  <!-- Warm smile -->
+  <path d="M42 66 Q50 72 58 66" stroke="#c9a07a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Cozy sweater/top -->
+  <path d="M30 82 Q50 76 70 82 L74 100 L26 100 Z" fill="#fbbf24"/>
+  <path d="M38 80 Q50 78 62 80" stroke="#f59e0b" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Collar detail -->
+  <ellipse cx="50" cy="82" rx="8" ry="4" fill="#fde68a"/>
+</svg>

@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Chill River - Bucket hat, relaxed vibes, cozy style -->
+  <defs>
+    <linearGradient id="bucket10" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0ea5e9"/>
+      <stop offset="100%" style="stop-color:#0284c7"/>
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="#22c55e"/>
+
+  <!-- Face -->
+  <ellipse cx="50" cy="50" rx="20" ry="21" fill="#fcd9b8"/>
+
+  <!-- Ears -->
+  <ellipse cx="30" cy="50" rx="3" ry="5" fill="#e8c4a8"/>
+  <ellipse cx="70" cy="50" rx="3" ry="5" fill="#e8c4a8"/>
+
+  <!-- Dyed hair peeking out - fun blue tips -->
+  <path d="M30 46 Q26 54 30 62" stroke="#0ea5e9" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M70 46 Q74 54 70 62" stroke="#0ea5e9" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- Natural hair at roots -->
+  <path d="M32 40 Q30 46 30 48" stroke="#92400e" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M68 40 Q70 46 70 48" stroke="#92400e" stroke-width="4" fill="none" stroke-linecap="round"/>
+
+  <!-- Bucket hat -->
+  <ellipse cx="50" cy="36" rx="28" ry="10" fill="url(#bucket10)"/>
+  <!-- Hat crown -->
+  <path d="M30 36 Q32 20 50 18 Q68 20 70 36" fill="url(#bucket10)"/>
+  <!-- Hat brim with wave pattern -->
+  <path d="M22 38 Q30 42 38 38 Q46 34 54 38 Q62 42 70 38 Q78 34 78 38 L76 44 Q68 48 60 44 Q52 40 44 44 Q36 48 28 44 L22 38" fill="#0284c7"/>
+  <!-- Fun smiley patch on hat -->
+  <circle cx="58" cy="28" r="5" fill="#fbbf24"/>
+  <circle cx="56" cy="27" r="1" fill="#1f2937"/>
+  <circle cx="60" cy="27" r="1" fill="#1f2937"/>
+  <path d="M56 29 Q58 31 60 29" stroke="#1f2937" stroke-width="1" fill="none" stroke-linecap="round"/>
+
+  <!-- Happy squinty eyes -->
+  <path d="M38 48 Q42 44 46 48" stroke="#1f2937" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M54 48 Q58 44 62 48" stroke="#1f2937" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Freckles -->
+  <circle cx="36" cy="54" r="1.2" fill="#d4a574"/>
+  <circle cx="40" cy="56" r="1" fill="#d4a574"/>
+  <circle cx="60" cy="56" r="1" fill="#d4a574"/>
+  <circle cx="64" cy="54" r="1.2" fill="#d4a574"/>
+
+  <!-- Small nose -->
+  <ellipse cx="50" cy="54" rx="2" ry="1.5" fill="#e8c4a8"/>
+
+  <!-- Big happy grin -->
+  <path d="M42 60 Q50 68 58 60" stroke="#8b6f5c" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Teeth showing -->
+  <path d="M44 62 L56 62" stroke="white" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Cozy oversized sweater -->
+  <path d="M20 85 Q20 66 38 64 L50 70 L62 64 Q80 66 80 85 L80 100 L20 100 Z" fill="#16a34a"/>
+  <!-- Sweater texture - cable knit pattern -->
+  <path d="M32 72 Q36 78 32 84 Q36 90 32 96" stroke="#15803d" stroke-width="2" fill="none"/>
+  <path d="M50 70 Q54 78 50 86 Q54 94 50 100" stroke="#15803d" stroke-width="2" fill="none"/>
+  <path d="M68 72 Q64 78 68 84 Q64 90 68 96" stroke="#15803d" stroke-width="2" fill="none"/>
+  <!-- Crew neck -->
+  <ellipse cx="50" cy="68" rx="10" ry="4" fill="#15803d"/>
+</svg>

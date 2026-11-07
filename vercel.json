@@ -1,0 +1,40 @@
+{
+  "crons": [
+    {
+      "path": "/api/news/fetch",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/renewal-reminders",
+      "schedule": "30 2 * * *"
+    },
+    {
+      "path": "/api/cron/process-conventional-queue",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/reset-streaks",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/morning-reminder",
+      "schedule": "30 2 * * *"
+    },
+    {
+      "path": "/api/cron/streak-alert",
+      "schedule": "30 12 * * *"
+    },
+    {
+      "path": "/api/cron/daily-summary",
+      "schedule": "30 15 * * *"
+    },
+    {
+      "path": "/api/cron/spsc-scrape",
+      "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/spsc-retry-queue",
+      "schedule": "30 5 * * *"
+    }
+  ]
+}

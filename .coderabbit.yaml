@@ -1,0 +1,56 @@
+language: "en"
+early_access: false
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - "main"
+
+  path_instructions:
+    - path: "src/app/api/**"
+      instructions: |
+        Review API routes for:
+        - Input validation with Zod schemas (validateBody)
+        - Rate limiting applied via applyRateLimit()
+        - Proper authentication checks (getUser())
+        - No exposed secrets or service role keys at module scope
+        - Proper error handling (no stack traces leaked to client)
+        - CAPTCHA verification where required (payment, auth)
+
+    - path: "src/lib/supabase/**"
+      instructions: |
+        Verify Supabase clients are not leaking service role keys.
+        Ensure server.ts uses anon key, not service role.
+
+    - path: "*.sql"
+      instructions: |
+        Check RLS policies for overly permissive access.
+        Verify no SELECT USING (true) on sensitive tables.
+        Flag any security definer functions that could be abused.
+
+    - path: "src/app/(auth)/**"
+      instructions: |
+        Verify Turnstile CAPTCHA is integrated.
+        Check for XSS vulnerabilities in user inputs.
+        Ensure no sensitive data in URL parameters.
+
+    - path: "next.config.ts"
+      instructions: |
+        Verify security headers are present (CSP, HSTS, X-Frame-Options).
+        Check for any relaxed CSP directives.
+
+  path_filters:
+    - "!node_modules/**"
+    - "!package-lock.json"
+    - "!.next/**"
+
+chat:
+  auto_reply: true

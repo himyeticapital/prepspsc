@@ -1,0 +1,21 @@
+version: 2
+
+secret:
+  # Ignore paths that don't contain real secrets
+  ignored_paths:
+    - "**/node_modules/**"
+    - "**/*.test.ts"
+    - "**/*.test.tsx"
+    - "**/tests/**"
+    - ".env.example"
+    - "**/database.types.ts"
+    - "**/package-lock.json"
+
+  # Ignore known non-secret patterns (public keys are OK)
+  ignored_matches:
+    - name: "Supabase anon key (public, safe to expose)"
+      match: "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+    - name: "Turnstile site key (public, safe to expose)"
+      match: "NEXT_PUBLIC_TURNSTILE_SITE_KEY"
+    - name: "Cashfree env (not a secret)"
+      match: "NEXT_PUBLIC_CASHFREE_ENV"

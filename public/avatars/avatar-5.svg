@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Male studious - Glasses, teal shirt -->
+  <circle cx="50" cy="50" r="48" fill="#14B8A6"/>
+  <!-- Face -->
+  <circle cx="50" cy="42" r="22" fill="#FCD9B8"/>
+  <!-- Hair - curly/wavy -->
+  <path d="M26 38 Q28 15 50 14 Q72 15 74 38" fill="#4B5563"/>
+  <circle cx="32" cy="28" r="5" fill="#4B5563"/>
+  <circle cx="45" cy="22" r="6" fill="#4B5563"/>
+  <circle cx="58" cy="22" r="5" fill="#4B5563"/>
+  <circle cx="68" cy="28" r="5" fill="#4B5563"/>
+  <!-- Glasses -->
+  <rect x="30" y="35" width="16" height="12" rx="3" fill="none" stroke="#1F2937" stroke-width="2"/>
+  <rect x="54" y="35" width="16" height="12" rx="3" fill="none" stroke="#1F2937" stroke-width="2"/>
+  <line x1="46" y1="41" x2="54" y2="41" stroke="#1F2937" stroke-width="2"/>
+  <line x1="30" y1="41" x2="26" y2="39" stroke="#1F2937" stroke-width="2"/>
+  <line x1="70" y1="41" x2="74" y2="39" stroke="#1F2937" stroke-width="2"/>
+  <!-- Eyes behind glasses -->
+  <circle cx="38" cy="41" r="3" fill="#1F2937"/>
+  <circle cx="62" cy="41" r="3" fill="#1F2937"/>
+  <circle cx="39" cy="40" r="1" fill="white"/>
+  <circle cx="63" cy="40" r="1" fill="white"/>
+  <!-- Smile -->
+  <path d="M44 52 Q50 56 56 52" stroke="#1F2937" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Shirt -->
+  <path d="M22 80 Q22 62 38 60 L50 65 L62 60 Q78 62 78 80 L78 100 L22 100 Z" fill="#0D9488"/>
+</svg>

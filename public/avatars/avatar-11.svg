@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Anime Hero - Naruto-style spiky hair, determined look -->
+  <defs>
+    <linearGradient id="hair11" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24"/>
+      <stop offset="100%" style="stop-color:#f59e0b"/>
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="#f97316"/>
+
+  <!-- Face -->
+  <circle cx="50" cy="52" r="22" fill="#fde4c4"/>
+
+  <!-- Ears -->
+  <ellipse cx="28" cy="52" rx="3" ry="5" fill="#f5d4b3"/>
+  <ellipse cx="72" cy="52" rx="3" ry="5" fill="#f5d4b3"/>
+
+  <!-- Spiky anime hair -->
+  <path d="M28 45 Q30 20 50 15 Q70 20 72 45 Q68 30 50 25 Q32 30 28 45" fill="url(#hair11)"/>
+  <!-- Dramatic spikes -->
+  <path d="M30 30 L22 8 L38 25" fill="url(#hair11)"/>
+  <path d="M40 22 L35 2 L48 18" fill="url(#hair11)"/>
+  <path d="M50 18 L50 0 L55 18" fill="url(#hair11)"/>
+  <path d="M60 22 L65 2 L52 18" fill="url(#hair11)"/>
+  <path d="M70 30 L78 8 L62 25" fill="url(#hair11)"/>
+  <!-- Side spikes -->
+  <path d="M26 40 L18 35 L28 48" fill="url(#hair11)"/>
+  <path d="M74 40 L82 35 L72 48" fill="url(#hair11)"/>
+
+  <!-- Headband -->
+  <rect x="28" y="38" width="44" height="6" fill="#3b82f6" rx="1"/>
+  <rect x="44" y="36" width="12" height="10" fill="#60a5fa" rx="2"/>
+  <path d="M46 39 L50 43 L54 39" stroke="#1e3a8a" stroke-width="2" fill="none"/>
+  <!-- Headband tails -->
+  <path d="M26 41 Q18 45 15 55" stroke="#3b82f6" stroke-width="4" fill="none"/>
+  <path d="M74 41 Q82 45 85 55" stroke="#3b82f6" stroke-width="4" fill="none"/>
+
+  <!-- Big anime eyes -->
+  <ellipse cx="40" cy="52" rx="6" ry="7" fill="white"/>
+  <ellipse cx="60" cy="52" rx="6" ry="7" fill="white"/>
+  <ellipse cx="41" cy="53" rx="4" ry="5" fill="#3b82f6"/>
+  <ellipse cx="61" cy="53" rx="4" ry="5" fill="#3b82f6"/>
+  <circle cx="42" cy="51" r="2" fill="white"/>
+  <circle cx="62" cy="51" r="2" fill="white"/>
+  <circle cx="40" cy="54" r="1" fill="white"/>
+  <circle cx="60" cy="54" r="1" fill="white"/>
+
+  <!-- Eyebrows - determined -->
+  <path d="M34 44 L46 46" stroke="#d97706" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M66 44 L54 46" stroke="#d97706" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Nose -->
+  <path d="M50 55 L50 60" stroke="#e8c9a8" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Determined grin -->
+  <path d="M42 66 Q50 72 58 66" stroke="#c9a07c" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M44 66 Q50 70 56 66" fill="white"/>
+
+  <!-- Jacket collar -->
+  <path d="M26 85 Q26 72 38 70 L50 75 L62 70 Q74 72 74 85 L74 100 L26 100 Z" fill="#f97316"/>
+  <path d="M38 70 L50 80 L62 70" fill="#1f2937"/>
+</svg>

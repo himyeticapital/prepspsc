@@ -1,0 +1,128 @@
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="aiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="800" fill="url(#aiGrad)"/>
+
+  <!-- Animated particles -->
+  <circle cx="150" cy="150" r="2.5" fill="#a855f7" opacity="0.6">
+    <animate attributeName="cy" values="150;250;150" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="1050" cy="650" r="2" fill="#6366f1" opacity="0.5">
+    <animate attributeName="cy" values="650;550;650" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="300" cy="700" r="3" fill="#a855f7" opacity="0.4">
+    <animate attributeName="cx" values="300;350;300" dur="6s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Main container card -->
+  <rect x="100" y="100" width="1000" height="600" rx="24" fill="rgba(24, 24, 27, 0.7)" stroke="rgba(168, 85, 247, 0.3)" stroke-width="2"/>
+
+  <!-- Header bar -->
+  <rect x="150" y="150" width="900" height="60" rx="12" fill="rgba(168, 85, 247, 0.1)" stroke="rgba(168, 85, 247, 0.2)" stroke-width="1"/>
+  <text x="185" y="188" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="#a855f7">Generate Study Materials</text>
+  <text x="870" y="188" font-family="Arial, sans-serif" font-size="14" fill="#71717a">AI Powered</text>
+
+  <!-- Sparkle icon next to header -->
+  <path d="M 170 170 L 173 178 L 181 181 L 173 184 L 170 192 L 167 184 L 159 181 L 167 178 Z" fill="#a855f7" opacity="0.8"/>
+
+  <!-- Feature cards row 1 -->
+  <!-- Summary -->
+  <rect x="150" y="250" width="270" height="130" rx="16" fill="rgba(34, 197, 94, 0.08)" stroke="rgba(34, 197, 94, 0.3)" stroke-width="1.5"/>
+  <rect x="175" y="278" width="24" height="24" rx="4" fill="rgba(34, 197, 94, 0.3)"/>
+  <rect x="180" y="284" width="14" height="2" rx="1" fill="#4ade80"/>
+  <rect x="180" y="289" width="10" height="2" rx="1" fill="#4ade80"/>
+  <rect x="180" y="294" width="12" height="2" rx="1" fill="#4ade80"/>
+  <text x="210" y="296" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#4ade80">Summary</text>
+  <text x="170" y="330" font-family="Arial, sans-serif" font-size="12" fill="#71717a">Key points and bullet points</text>
+  <!-- Progress bars -->
+  <rect x="170" y="350" width="200" height="5" rx="2.5" fill="rgba(34, 197, 94, 0.15)"/>
+  <rect x="170" y="350" width="140" height="5" rx="2.5" fill="rgba(34, 197, 94, 0.5)">
+    <animate attributeName="width" values="80;140;80" dur="3s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="170" y="362" width="160" height="5" rx="2.5" fill="rgba(34, 197, 94, 0.15)"/>
+  <rect x="170" y="362" width="100" height="5" rx="2.5" fill="rgba(34, 197, 94, 0.35)"/>
+
+  <!-- Mind Map -->
+  <rect x="450" y="250" width="270" height="130" rx="16" fill="rgba(59, 130, 246, 0.08)" stroke="rgba(59, 130, 246, 0.3)" stroke-width="1.5"/>
+  <rect x="475" y="278" width="24" height="24" rx="4" fill="rgba(59, 130, 246, 0.3)"/>
+  <!-- Mini network icon -->
+  <circle cx="483" cy="290" r="3" fill="#60a5fa"/>
+  <circle cx="493" cy="284" r="2" fill="#60a5fa"/>
+  <circle cx="493" cy="296" r="2" fill="#60a5fa"/>
+  <line x1="485" y1="289" x2="491" y2="285" stroke="#60a5fa" stroke-width="1"/>
+  <line x1="485" y1="291" x2="491" y2="295" stroke="#60a5fa" stroke-width="1"/>
+  <text x="510" y="296" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#60a5fa">Mind Map</text>
+  <text x="470" y="330" font-family="Arial, sans-serif" font-size="12" fill="#71717a">Visual concept hierarchy</text>
+  <!-- Mini mind map -->
+  <circle cx="540" cy="358" r="10" fill="rgba(59, 130, 246, 0.3)" stroke="#3b82f6" stroke-width="1.5"/>
+  <circle cx="505" cy="350" r="6" fill="rgba(59, 130, 246, 0.2)" stroke="#3b82f6" stroke-width="1"/>
+  <circle cx="505" cy="370" r="6" fill="rgba(59, 130, 246, 0.2)" stroke="#3b82f6" stroke-width="1"/>
+  <circle cx="575" cy="348" r="6" fill="rgba(59, 130, 246, 0.2)" stroke="#3b82f6" stroke-width="1"/>
+  <circle cx="575" cy="368" r="6" fill="rgba(59, 130, 246, 0.2)" stroke="#3b82f6" stroke-width="1"/>
+  <line x1="530" y1="355" x2="511" y2="352" stroke="#3b82f6" stroke-width="1" opacity="0.5"/>
+  <line x1="530" y1="362" x2="511" y2="368" stroke="#3b82f6" stroke-width="1" opacity="0.5"/>
+  <line x1="550" y1="355" x2="569" y2="350" stroke="#3b82f6" stroke-width="1" opacity="0.5"/>
+  <line x1="550" y1="362" x2="569" y2="366" stroke="#3b82f6" stroke-width="1" opacity="0.5"/>
+
+  <!-- Flashcards -->
+  <rect x="750" y="250" width="270" height="130" rx="16" fill="rgba(234, 179, 8, 0.08)" stroke="rgba(234, 179, 8, 0.3)" stroke-width="1.5"/>
+  <rect x="775" y="278" width="24" height="24" rx="4" fill="rgba(234, 179, 8, 0.3)"/>
+  <!-- Card stack icon -->
+  <rect x="779" y="283" width="16" height="12" rx="2" fill="none" stroke="#facc15" stroke-width="1.5"/>
+  <rect x="782" y="286" width="16" height="12" rx="2" fill="none" stroke="#facc15" stroke-width="1" opacity="0.5"/>
+  <text x="810" y="296" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#facc15">Flashcards</text>
+  <text x="770" y="330" font-family="Arial, sans-serif" font-size="12" fill="#71717a">Term and definition cards</text>
+  <!-- Stacked cards -->
+  <rect x="785" y="345" width="80" height="28" rx="5" fill="rgba(234, 179, 8, 0.12)" stroke="rgba(234, 179, 8, 0.3)" stroke-width="1"/>
+  <rect x="790" y="350" width="80" height="28" rx="5" fill="rgba(234, 179, 8, 0.18)" stroke="rgba(234, 179, 8, 0.4)" stroke-width="1"/>
+  <text x="810" y="369" font-family="Arial, sans-serif" font-size="9" fill="#facc15">Term</text>
+
+  <!-- Feature cards row 2 -->
+  <!-- Quiz -->
+  <rect x="250" y="420" width="270" height="130" rx="16" fill="rgba(168, 85, 247, 0.08)" stroke="rgba(168, 85, 247, 0.3)" stroke-width="1.5"/>
+  <rect x="275" y="448" width="24" height="24" rx="4" fill="rgba(168, 85, 247, 0.3)"/>
+  <!-- Question mark icon -->
+  <text x="287" y="466" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#c084fc">?</text>
+  <text x="310" y="466" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#c084fc">Quiz</text>
+  <text x="270" y="500" font-family="Arial, sans-serif" font-size="12" fill="#71717a">10 MCQs with explanations</text>
+  <!-- MCQ options -->
+  <rect x="270" y="515" width="120" height="10" rx="5" fill="rgba(168, 85, 247, 0.12)"/>
+  <rect x="270" y="530" width="100" height="10" rx="5" fill="rgba(168, 85, 247, 0.25)" stroke="rgba(168, 85, 247, 0.5)" stroke-width="1"/>
+  <circle cx="278" cy="535" r="3" fill="#a855f7"/>
+
+  <!-- Infographic -->
+  <rect x="550" y="420" width="270" height="130" rx="16" fill="rgba(239, 68, 68, 0.08)" stroke="rgba(239, 68, 68, 0.3)" stroke-width="1.5"/>
+  <rect x="575" y="448" width="24" height="24" rx="4" fill="rgba(239, 68, 68, 0.3)"/>
+  <!-- Chart icon -->
+  <rect x="580" y="461" width="4" height="8" rx="1" fill="#f87171"/>
+  <rect x="586" y="457" width="4" height="12" rx="1" fill="#f87171"/>
+  <rect x="592" y="454" width="4" height="15" rx="1" fill="#f87171"/>
+  <text x="610" y="466" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#f87171">Infographic</text>
+  <text x="570" y="500" font-family="Arial, sans-serif" font-size="12" fill="#71717a">Charts and visualizations</text>
+  <!-- Bar chart -->
+  <rect x="580" y="525" width="14" height="18" rx="2" fill="rgba(239, 68, 68, 0.3)"/>
+  <rect x="600" y="518" width="14" height="25" rx="2" fill="rgba(239, 68, 68, 0.4)"/>
+  <rect x="620" y="522" width="14" height="21" rx="2" fill="rgba(239, 68, 68, 0.35)"/>
+  <rect x="640" y="514" width="14" height="29" rx="2" fill="rgba(239, 68, 68, 0.5)"/>
+  <rect x="660" y="520" width="14" height="23" rx="2" fill="rgba(239, 68, 68, 0.4)"/>
+
+  <!-- Bottom text -->
+  <text x="460" y="640" font-family="Arial, sans-serif" font-size="13" fill="#71717a">Spaced Repetition + Active Recall</text>
+
+  <!-- Decorative sparkles -->
+  <path d="M 950 550 L 954 558 L 962 562 L 954 566 L 950 574 L 946 566 L 938 562 L 946 558 Z" fill="#a855f7" opacity="0.4">
+    <animate attributeName="opacity" values="0.2;0.6;0.2" dur="2.5s" repeatCount="indefinite"/>
+  </path>
+  <path d="M 180 580 L 183 586 L 189 588 L 183 590 L 180 596 L 177 590 L 171 588 L 177 586 Z" fill="#6366f1" opacity="0.3">
+    <animate attributeName="opacity" values="0.1;0.5;0.1" dur="3s" repeatCount="indefinite"/>
+  </path>
+  <path d="M 1020 200 L 1023 206 L 1029 208 L 1023 210 L 1020 216 L 1017 210 L 1011 208 L 1017 206 Z" fill="#a855f7" opacity="0.3">
+    <animate attributeName="opacity" values="0.15;0.55;0.15" dur="2s" repeatCount="indefinite"/>
+  </path>
+</svg>

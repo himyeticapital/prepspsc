@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Anime Cool Guy - Silver/white hair, casual confident -->
+  <defs>
+    <linearGradient id="hair13" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e5e7eb"/>
+      <stop offset="100%" style="stop-color:#9ca3af"/>
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="#10b981"/>
+
+  <!-- Face -->
+  <circle cx="50" cy="52" r="21" fill="#fde8d8"/>
+
+  <!-- Ears -->
+  <ellipse cx="29" cy="52" rx="3" ry="5" fill="#f5d8c8"/>
+  <ellipse cx="71" cy="52" rx="3" ry="5" fill="#f5d8c8"/>
+
+  <!-- Stylish messy white hair -->
+  <path d="M29 46 Q32 20 50 16 Q68 20 71 46 Q66 30 50 26 Q34 30 29 46" fill="url(#hair13)"/>
+  <!-- Messy stylish spikes -->
+  <path d="M32 28 L26 14 L40 24" fill="url(#hair13)"/>
+  <path d="M44 22 L42 8 L52 20" fill="url(#hair13)"/>
+  <path d="M56 22 L58 8 L48 20" fill="url(#hair13)"/>
+  <path d="M68 28 L74 14 L60 24" fill="url(#hair13)"/>
+  <!-- Side hair covering eye slightly -->
+  <path d="M28 42 Q24 50 28 60" fill="url(#hair13)"/>
+  <path d="M32 44 Q30 52 32 58" fill="url(#hair13)"/>
+  <!-- Hair covering left eye partially -->
+  <path d="M30 44 Q36 42 42 50 L38 54 Q34 48 30 50" fill="url(#hair13)"/>
+
+  <!-- Mask/face covering (like Kakashi) -->
+  <path d="M30 62 Q30 58 50 56 Q70 58 70 62 L70 80 Q50 78 30 80 Z" fill="#1f2937"/>
+
+  <!-- One visible eye (cool anime style) -->
+  <ellipse cx="58" cy="52" rx="6" ry="7" fill="white"/>
+  <ellipse cx="59" cy="53" rx="4.5" ry="5.5" fill="#06b6d4"/>
+  <ellipse cx="59" cy="53" rx="2.5" ry="3" fill="#0e7490"/>
+  <circle cx="60" cy="51" r="2" fill="white"/>
+  <circle cx="58" cy="54" r="1" fill="white"/>
+
+  <!-- Left eye mostly covered but hint visible -->
+  <ellipse cx="40" cy="52" rx="4" ry="5" fill="white" opacity="0.5"/>
+  <ellipse cx="40" cy="53" rx="3" ry="4" fill="#06b6d4" opacity="0.5"/>
+
+  <!-- Sharp eyebrow -->
+  <path d="M52 44 L65 46" stroke="#6b7280" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- Headband with symbol -->
+  <rect x="28" y="36" width="44" height="5" fill="#374151" rx="1"/>
+  <circle cx="50" cy="38.5" r="3" fill="#4b5563"/>
+  <path d="M48 38.5 L50 40 L52 38.5" stroke="#9ca3af" stroke-width="1" fill="none"/>
+
+  <!-- Jacket -->
+  <path d="M26 85 Q26 72 38 70 L50 76 L62 70 Q74 72 74 85 L74 100 L26 100 Z" fill="#065f46"/>
+  <path d="M38 70 L50 82 L62 70" fill="#047857"/>
+  <!-- Collar detail -->
+  <path d="M40 72 L50 80 L60 72" fill="#059669"/>
+</svg>

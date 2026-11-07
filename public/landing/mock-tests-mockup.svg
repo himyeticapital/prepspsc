@@ -1,0 +1,76 @@
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="testBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0.2" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="800" fill="url(#testBg)"/>
+
+  <!-- Decorative elements -->
+  <text x="150" y="100" font-family="Arial, sans-serif" font-size="18" opacity="0.4">📋</text>
+  <text x="1020" y="650" font-family="Arial, sans-serif" font-size="18" opacity="0.4">✏️</text>
+  <circle cx="1100" cy="150" r="3" fill="#3b82f6" opacity="0.5">
+    <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Main test card -->
+  <rect x="200" y="150" width="800" height="500" rx="24" fill="rgba(24, 24, 27, 0.7)" stroke="rgba(59, 130, 246, 0.4)" stroke-width="2"/>
+
+  <!-- Test header -->
+  <rect x="230" y="180" width="740" height="80" rx="12" fill="url(#blueGrad)"/>
+  <text x="250" y="220" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#fafafa">Sikkim PSC Mock Test - 2024</text>
+  <text x="250" y="245" font-family="Arial, sans-serif" font-size="14" fill="#d1d5db">General Studies • Full Length Test</text>
+
+  <!-- Test stats -->
+  <rect x="230" y="290" width="350" height="70" rx="12" fill="rgba(59, 130, 246, 0.1)" stroke="rgba(59, 130, 246, 0.3)" stroke-width="1"/>
+  <text x="250" y="320" font-family="Arial, sans-serif" font-size="14" fill="#a1a1aa">Total Questions</text>
+  <text x="250" y="345" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#3b82f6">100</text>
+
+  <rect x="620" y="290" width="350" height="70" rx="12" fill="rgba(139, 92, 246, 0.1)" stroke="rgba(139, 92, 246, 0.3)" stroke-width="1"/>
+  <text x="640" y="320" font-family="Arial, sans-serif" font-size="14" fill="#a1a1aa">Duration</text>
+  <text x="640" y="345" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#8b5cf6">120 min</text>
+
+  <!-- Question breakdown -->
+  <text x="250" y="405" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#fafafa">Question Breakdown:</text>
+
+  <!-- Subject pills -->
+  <rect x="250" y="425" width="140" height="35" rx="18" fill="rgba(59, 130, 246, 0.2)" stroke="#3b82f6" stroke-width="1"/>
+  <text x="320" y="448" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#3b82f6">History (25)</text>
+
+  <rect x="410" y="425" width="140" height="35" rx="18" fill="rgba(16, 185, 129, 0.2)" stroke="#10b981" stroke-width="1"/>
+  <text x="480" y="448" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#10b981">Geography (25)</text>
+
+  <rect x="570" y="425" width="140" height="35" rx="18" fill="rgba(249, 115, 22, 0.2)" stroke="#f97316" stroke-width="1"/>
+  <text x="640" y="448" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#f97316">Polity (25)</text>
+
+  <rect x="730" y="425" width="140" height="35" rx="18" fill="rgba(168, 85, 247, 0.2)" stroke="#a855f7" stroke-width="1"/>
+  <text x="800" y="448" font-family="Arial, sans-serif" font-size="13" text-anchor="middle" fill="#a855f7">Economics (25)</text>
+
+  <!-- Difficulty indicator -->
+  <rect x="250" y="485" width="720" height="50" rx="10" fill="rgba(251, 146, 60, 0.1)" stroke="rgba(251, 146, 60, 0.3)" stroke-width="1"/>
+  <text x="270" y="513" font-family="Arial, sans-serif" font-size="14" fill="#a1a1aa">Difficulty:</text>
+  <circle cx="360" cy="509" r="6" fill="#fb923c"/>
+  <circle cx="385" cy="509" r="6" fill="#fb923c"/>
+  <circle cx="410" cy="509" r="6" fill="#fb923c"/>
+  <circle cx="435" cy="509" r="6" fill="rgba(251, 146, 60, 0.3)"/>
+  <circle cx="460" cy="509" r="6" fill="rgba(251, 146, 60, 0.3)"/>
+  <text x="490" y="513" font-family="Arial, sans-serif" font-size="13" fill="#fb923c">Intermediate</text>
+
+  <!-- Start button -->
+  <rect x="360" y="565" width="480" height="55" rx="12" fill="#3b82f6" opacity="0.9">
+    <animate attributeName="opacity" values="0.9;1;0.9" dur="2s" repeatCount="indefinite"/>
+  </rect>
+  <text x="600" y="597" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white" text-anchor="middle">Start Test →</text>
+
+  <!-- Stats footer -->
+  <text x="380" y="625" font-family="Arial, sans-serif" font-size="12" fill="#71717a" text-anchor="middle">1,234 attempted</text>
+  <circle cx="620" cy="621" r="2" fill="#71717a"/>
+  <text x="820" y="625" font-family="Arial, sans-serif" font-size="12" fill="#71717a" text-anchor="middle">Avg Score: 72%</text>
+</svg>

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Pretty female - Long flowing hair, elegant -->
+  <defs>
+    <linearGradient id="hair2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed"/>
+      <stop offset="100%" style="stop-color:#a855f7"/>
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="#ec4899"/>
+
+  <!-- Long flowing hair back -->
+  <ellipse cx="50" cy="58" rx="34" ry="40" fill="url(#hair2)"/>
+  <!-- Hair waves -->
+  <path d="M20 55 Q18 70 22 85" stroke="#6d28d9" stroke-width="3" fill="none"/>
+  <path d="M80 55 Q82 70 78 85" stroke="#6d28d9" stroke-width="3" fill="none"/>
+
+  <!-- Face -->
+  <ellipse cx="50" cy="44" rx="20" ry="22" fill="#fcd9b8"/>
+
+  <!-- Hair front - side swept bangs -->
+  <path d="M30 40 Q32 22 50 20 Q68 22 70 40 Q65 30 50 28 Q35 30 30 40" fill="url(#hair2)"/>
+  <path d="M30 38 Q28 32 35 30 Q42 28 45 35" fill="url(#hair2)"/>
+  <!-- Hair strands -->
+  <path d="M22 45 Q20 60 24 75" stroke="#7c3aed" stroke-width="6" stroke-linecap="round"/>
+  <path d="M78 45 Q80 60 76 75" stroke="#7c3aed" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- Eyebrows - elegant arch -->
+  <path d="M36 36 Q40 34 44 36" stroke="#4a3728" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M56 36 Q60 34 64 36" stroke="#4a3728" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Eyes - pretty almond shape -->
+  <ellipse cx="40" cy="42" rx="4" ry="4.5" fill="#1f2937"/>
+  <ellipse cx="60" cy="42" rx="4" ry="4.5" fill="#1f2937"/>
+  <circle cx="41" cy="41" r="1.5" fill="white"/>
+  <circle cx="61" cy="41" r="1.5" fill="white"/>
+  <!-- Eyelashes -->
+  <path d="M35 40 L33 38" stroke="#1f2937" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M37 39 L36 37" stroke="#1f2937" stroke-width="1" stroke-linecap="round"/>
+  <path d="M65 40 L67 38" stroke="#1f2937" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M63 39 L64 37" stroke="#1f2937" stroke-width="1" stroke-linecap="round"/>
+
+  <!-- Soft blush -->
+  <ellipse cx="32" cy="48" rx="5" ry="2.5" fill="#fda4af" opacity="0.5"/>
+  <ellipse cx="68" cy="48" rx="5" ry="2.5" fill="#fda4af" opacity="0.5"/>
+
+  <!-- Nose -->
+  <path d="M50 46 L50 50" stroke="#e8c4a8" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Soft smile with slight lip color -->
+  <path d="M44 54 Q50 58 56 54" stroke="#d4736a" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- Elegant top/dress -->
+  <path d="M24 80 Q24 65 40 62 L50 66 L60 62 Q76 65 76 80 L76 100 L24 100 Z" fill="#f472b6"/>
+  <!-- Neckline detail -->
+  <path d="M40 62 Q50 70 60 62" fill="#ec4899"/>
+</svg>

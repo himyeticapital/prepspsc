@@ -1,0 +1,96 @@
+{
+  "agents": [
+    {
+      "name": "PrepSPSC PYQ Agent",
+      "description": "Search 7,400+ real SPSC previous year questions, generate mock tests across 64 exam patterns, track progress, and use PYQs as reference for AI question generation.",
+      "url": "https://prepspsc.com",
+      "provider": {
+        "name": "PrepSPSC",
+        "url": "https://prepspsc.com"
+      },
+      "capabilities": {
+        "mcp": {
+          "server_name": "prepspsc-pyq",
+          "npm_package": "prepspsc-mcp",
+          "local_setup": {
+            "command": "node",
+            "args": ["mcp-server/dist/index.js"],
+            "env": {
+              "PREPSPSC_API_KEY": "sk_live_YOUR_KEY"
+            }
+          },
+          "tools": [
+            "list_subjects",
+            "search_questions",
+            "generate_mock_test",
+            "list_exam_patterns",
+            "record_progress",
+            "get_progress",
+            "get_analytics",
+            "get_leaderboard",
+            "add_bookmark",
+            "get_bookmarks",
+            "remove_bookmark"
+          ]
+        },
+        "openapi": {
+          "url": "https://prepspsc.com/openapi.yaml",
+          "version": "3.1.0"
+        },
+        "clawhub": {
+          "skill_id": "prepspsc-pyq@1.0.0",
+          "install": "npx clawdhub install prepspsc-pyq"
+        }
+      },
+      "auth": {
+        "type": "bearer",
+        "key_prefix": "sk_live_",
+        "get_key_url": "https://prepspsc.com/developers",
+        "description": "Free API key — 10 requests/min, 1,000/month. No credit card required."
+      }
+    }
+  ],
+  "services": [
+    {
+      "name": "PrepSPSC PYQ API",
+      "description": "REST API for 7,400+ Sikkim PSC previous year questions with semantic search, mock test generation (64 exam patterns), progress tracking, analytics, leaderboards, and bookmarks. Use returned questions as few-shot reference for AI question generation.",
+      "url": "https://qqqditxzghqzodvauxth.supabase.co/functions/v1/pyq-api",
+      "openapi_url": "https://prepspsc.com/openapi.yaml",
+      "auth": {
+        "type": "bearer",
+        "key_prefix": "sk_live_",
+        "get_key_url": "https://prepspsc.com/developers"
+      },
+      "capabilities": [
+        "semantic_search",
+        "question_retrieval",
+        "subject_listing",
+        "mock_test_generation",
+        "ai_question_reference",
+        "progress_tracking",
+        "performance_analytics",
+        "leaderboard",
+        "bookmarks"
+      ],
+      "endpoints": [
+        { "method": "GET", "path": "/pyq-api", "description": "List subjects with question counts" },
+        { "method": "POST", "path": "/pyq-api", "description": "Semantic search for PYQ questions" },
+        { "method": "POST", "path": "/pyq-api/mock-test", "description": "Generate mock test (64 exam patterns)" },
+        { "method": "GET", "path": "/pyq-api/patterns", "description": "List exam patterns with subject distribution" },
+        { "method": "POST", "path": "/pyq-api/progress", "description": "Record user answer" },
+        { "method": "GET", "path": "/pyq-api/progress?user_id=xxx", "description": "Get answer history" },
+        { "method": "GET", "path": "/pyq-api/analytics?user_id=xxx", "description": "Performance analytics" },
+        { "method": "GET", "path": "/pyq-api/leaderboard", "description": "Leaderboard rankings" },
+        { "method": "POST", "path": "/pyq-api/bookmarks", "description": "Add bookmark" },
+        { "method": "GET", "path": "/pyq-api/bookmarks?user_id=xxx", "description": "List bookmarks" },
+        { "method": "DELETE", "path": "/pyq-api/bookmarks", "description": "Remove bookmark" }
+      ],
+      "rate_limits": {
+        "free": "10 requests/minute, 1000/month",
+        "paid": "60 requests/minute, 50000/month",
+        "enterprise": "500 requests/minute, unlimited"
+      },
+      "tags": ["education", "exam-prep", "sikkim-psc", "pyq", "ai-reference", "mcp"]
+    }
+  ]
+}

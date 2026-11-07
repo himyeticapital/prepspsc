@@ -1,0 +1,173 @@
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="plannerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a1628;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f1f2e;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="tealGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2DD4BF;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#0891b2;stop-opacity:0.6" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="800" fill="url(#plannerGrad)"/>
+
+  <!-- Subtle glow -->
+  <circle cx="600" cy="400" r="500" fill="rgba(45, 212, 191, 0.04)"/>
+
+  <!-- Main card -->
+  <rect x="80" y="80" width="1040" height="640" rx="24" fill="rgba(18, 24, 38, 0.85)" stroke="rgba(45, 212, 191, 0.25)" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <rect x="80" y="80" width="1040" height="72" rx="24" fill="rgba(45, 212, 191, 0.08)"/>
+  <rect x="80" y="128" width="1040" height="24" fill="rgba(45, 212, 191, 0.08)"/>
+
+  <!-- Calendar icon in header -->
+  <rect x="120" y="103" width="28" height="28" rx="6" fill="rgba(45, 212, 191, 0.2)" stroke="rgba(45, 212, 191, 0.5)" stroke-width="1"/>
+  <rect x="126" y="107" width="16" height="14" rx="2" fill="none" stroke="#2DD4BF" stroke-width="1.5"/>
+  <line x1="130" y1="107" x2="130" y2="104" stroke="#2DD4BF" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="138" y1="107" x2="138" y2="104" stroke="#2DD4BF" stroke-width="1.5" stroke-linecap="round"/>
+  <rect x="127" y="113" width="4" height="3" rx="1" fill="#2DD4BF"/>
+  <rect x="133" y="113" width="4" height="3" rx="1" fill="#2DD4BF"/>
+
+  <text x="162" y="123" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#e2e8f0">AI Study Planner</text>
+  <text x="900" y="116" font-family="Arial, sans-serif" font-size="11" fill="#2DD4BF">Week 3 of 12</text>
+
+  <!-- Progress bar below header -->
+  <rect x="900" y="121" width="160" height="5" rx="2.5" fill="rgba(45, 212, 191, 0.15)"/>
+  <rect x="900" y="121" width="60" height="5" rx="2.5" fill="url(#tealGrad)"/>
+
+  <!-- Week label -->
+  <text x="120" y="178" font-family="Arial, sans-serif" font-size="13" fill="#64748b">Mon</text>
+  <text x="250" y="178" font-family="Arial, sans-serif" font-size="13" fill="#64748b">Tue</text>
+  <text x="380" y="178" font-family="Arial, sans-serif" font-size="13" fill="#64748b">Wed</text>
+  <text x="510" y="178" font-family="Arial, sans-serif" font-size="13" fill="#64748b">Thu</text>
+  <text x="640" y="178" font-family="Arial, sans-serif" font-size="13" fill="#64748b">Fri</text>
+  <text x="770" y="178" font-family="Arial, sans-serif" font-size="13" fill="#64748b">Sat</text>
+  <text x="900" y="178" font-family="Arial, sans-serif" font-size="13" fill="#64748b">Sun</text>
+
+  <!-- Day columns separator lines -->
+  <line x1="200" y1="160" x2="200" y2="690" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="330" y1="160" x2="330" y2="690" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="460" y1="160" x2="460" y2="690" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="590" y1="160" x2="590" y2="690" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="720" y1="160" x2="720" y2="690" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="850" y1="160" x2="850" y2="690" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+
+  <!-- Row 1 — Subject label -->
+  <text x="120" y="215" font-family="Arial, sans-serif" font-size="10" fill="#94a3b8">Indian Polity</text>
+
+  <!-- Topic chips — Row 1 -->
+  <rect x="112" y="220" width="75" height="22" rx="11" fill="rgba(45, 212, 191, 0.15)" stroke="rgba(45, 212, 191, 0.4)" stroke-width="1"/>
+  <text x="150" y="235" font-family="Arial, sans-serif" font-size="9" fill="#2DD4BF" text-anchor="middle">Preamble</text>
+
+  <rect x="242" y="220" width="76" height="22" rx="11" fill="rgba(45, 212, 191, 0.12)" stroke="rgba(45, 212, 191, 0.3)" stroke-width="1"/>
+  <text x="280" y="235" font-family="Arial, sans-serif" font-size="9" fill="#2DD4BF" text-anchor="middle">Fundamental</text>
+
+  <rect x="372" y="220" width="76" height="22" rx="11" fill="rgba(45, 212, 191, 0.1)" stroke="rgba(45, 212, 191, 0.25)" stroke-width="1"/>
+  <text x="410" y="235" font-family="Arial, sans-serif" font-size="9" fill="#2DD4BF" text-anchor="middle">Directive</text>
+
+  <!-- Completed marker on Monday -->
+  <circle cx="196" cy="231" r="7" fill="rgba(45, 212, 191, 0.3)" stroke="#2DD4BF" stroke-width="1"/>
+  <path d="M 192 231 L 195 234 L 200 228" stroke="#2DD4BF" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Row 2 — History -->
+  <text x="120" y="275" font-family="Arial, sans-serif" font-size="10" fill="#94a3b8">History</text>
+  <rect x="112" y="280" width="75" height="22" rx="11" fill="rgba(168, 85, 247, 0.15)" stroke="rgba(168, 85, 247, 0.4)" stroke-width="1"/>
+  <text x="150" y="295" font-family="Arial, sans-serif" font-size="9" fill="#a855f7" text-anchor="middle">Maurya Era</text>
+
+  <rect x="372" y="280" width="76" height="22" rx="11" fill="rgba(168, 85, 247, 0.15)" stroke="rgba(168, 85, 247, 0.4)" stroke-width="1"/>
+  <text x="410" y="295" font-family="Arial, sans-serif" font-size="9" fill="#a855f7" text-anchor="middle">Gupta Era</text>
+
+  <rect x="502" y="280" width="76" height="22" rx="11" fill="rgba(168, 85, 247, 0.12)" stroke="rgba(168, 85, 247, 0.3)" stroke-width="1"/>
+  <text x="540" y="295" font-family="Arial, sans-serif" font-size="9" fill="#a855f7" text-anchor="middle">Mughal</text>
+
+  <!-- Row 3 — Geography -->
+  <text x="120" y="335" font-family="Arial, sans-serif" font-size="10" fill="#94a3b8">Geography</text>
+  <rect x="242" y="340" width="76" height="22" rx="11" fill="rgba(249, 115, 22, 0.15)" stroke="rgba(249, 115, 22, 0.4)" stroke-width="1"/>
+  <text x="280" y="355" font-family="Arial, sans-serif" font-size="9" fill="#fb923c" text-anchor="middle">Soil Types</text>
+
+  <rect x="632" y="340" width="76" height="22" rx="11" fill="rgba(249, 115, 22, 0.12)" stroke="rgba(249, 115, 22, 0.3)" stroke-width="1"/>
+  <text x="670" y="355" font-family="Arial, sans-serif" font-size="9" fill="#fb923c" text-anchor="middle">Monsoon</text>
+
+  <rect x="762" y="340" width="76" height="22" rx="11" fill="rgba(249, 115, 22, 0.1)" stroke="rgba(249, 115, 22, 0.25)" stroke-width="1"/>
+  <text x="800" y="355" font-family="Arial, sans-serif" font-size="9" fill="#fb923c" text-anchor="middle">Rivers</text>
+
+  <!-- Today indicator line -->
+  <rect x="330" y="165" width="3" height="525" rx="1.5" fill="rgba(45, 212, 191, 0.3)"/>
+  <rect x="322" y="165" width="19" height="16" rx="4" fill="rgba(45, 212, 191, 0.25)" stroke="rgba(45, 212, 191, 0.5)" stroke-width="1"/>
+  <text x="331" y="177" font-family="Arial, sans-serif" font-size="8" fill="#2DD4BF" text-anchor="middle">Today</text>
+
+  <!-- Row 4 — Economy -->
+  <text x="120" y="395" font-family="Arial, sans-serif" font-size="10" fill="#94a3b8">Economy</text>
+  <rect x="112" y="400" width="75" height="22" rx="11" fill="rgba(34, 211, 238, 0.15)" stroke="rgba(34, 211, 238, 0.4)" stroke-width="1"/>
+  <text x="150" y="415" font-family="Arial, sans-serif" font-size="9" fill="#22d3ee" text-anchor="middle">GDP Basics</text>
+
+  <rect x="502" y="400" width="76" height="22" rx="11" fill="rgba(34, 211, 238, 0.12)" stroke="rgba(34, 211, 238, 0.3)" stroke-width="1"/>
+  <text x="540" y="415" font-family="Arial, sans-serif" font-size="9" fill="#22d3ee" text-anchor="middle">Inflation</text>
+
+  <!-- Revision chips with dashed border -->
+  <rect x="762" y="400" width="76" height="22" rx="11" fill="rgba(34, 211, 238, 0.08)" stroke="rgba(34, 211, 238, 0.4)" stroke-width="1" stroke-dasharray="3 2"/>
+  <text x="800" y="415" font-family="Arial, sans-serif" font-size="9" fill="#22d3ee" text-anchor="middle">↻ Revision</text>
+
+  <!-- Leitner box mini indicator -->
+  <text x="120" y="470" font-family="Arial, sans-serif" font-size="10" fill="#64748b">Spaced Repetition</text>
+  <rect x="112" y="478" width="800" height="36" rx="10" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+
+  <!-- Box indicators -->
+  <rect x="124" y="487" width="28" height="17" rx="4" fill="rgba(239, 68, 68, 0.3)" stroke="rgba(239, 68, 68, 0.5)" stroke-width="1"/>
+  <text x="138" y="499" font-family="Arial, sans-serif" font-size="8" fill="#f87171" text-anchor="middle">Box 1</text>
+  <rect x="162" y="487" width="28" height="17" rx="4" fill="rgba(249, 115, 22, 0.3)" stroke="rgba(249, 115, 22, 0.5)" stroke-width="1"/>
+  <text x="176" y="499" font-family="Arial, sans-serif" font-size="8" fill="#fb923c" text-anchor="middle">Box 2</text>
+  <rect x="200" y="487" width="28" height="17" rx="4" fill="rgba(234, 179, 8, 0.3)" stroke="rgba(234, 179, 8, 0.5)" stroke-width="1"/>
+  <text x="214" y="499" font-family="Arial, sans-serif" font-size="8" fill="#facc15" text-anchor="middle">Box 3</text>
+  <rect x="238" y="487" width="28" height="17" rx="4" fill="rgba(34, 197, 94, 0.3)" stroke="rgba(34, 197, 94, 0.5)" stroke-width="1"/>
+  <text x="252" y="499" font-family="Arial, sans-serif" font-size="8" fill="#4ade80" text-anchor="middle">Box 4</text>
+  <rect x="276" y="487" width="28" height="17" rx="4" fill="rgba(45, 212, 191, 0.3)" stroke="rgba(45, 212, 191, 0.5)" stroke-width="1"/>
+  <text x="290" y="499" font-family="Arial, sans-serif" font-size="8" fill="#2DD4BF" text-anchor="middle">Box 5</text>
+  <text x="320" y="499" font-family="Arial, sans-serif" font-size="9" fill="#64748b">— 24 topics tracked</text>
+
+  <!-- AI chip -->
+  <rect x="870" y="485" width="30" height="17" rx="4" fill="rgba(168, 85, 247, 0.2)" stroke="rgba(168, 85, 247, 0.4)" stroke-width="1"/>
+  <text x="885" y="497" font-family="Arial, sans-serif" font-size="8" fill="#a855f7" text-anchor="middle">AI</text>
+
+  <!-- Weekly progress card at bottom -->
+  <rect x="112" y="535" width="920" height="100" rx="14" fill="rgba(255,255,255,0.03)" stroke="rgba(45, 212, 191, 0.12)" stroke-width="1"/>
+  <text x="140" y="558" font-family="Arial, sans-serif" font-size="12" fill="#94a3b8">Weekly Progress</text>
+
+  <!-- Progress bars per subject -->
+  <text x="140" y="580" font-family="Arial, sans-serif" font-size="9" fill="#64748b">Polity</text>
+  <rect x="190" y="572" width="300" height="6" rx="3" fill="rgba(45, 212, 191, 0.12)"/>
+  <rect x="190" y="572" width="210" height="6" rx="3" fill="rgba(45, 212, 191, 0.6)">
+    <animate attributeName="width" values="150;210;150" dur="4s" repeatCount="indefinite"/>
+  </rect>
+  <text x="502" y="580" font-family="Arial, sans-serif" font-size="9" fill="#2DD4BF">70%</text>
+
+  <text x="140" y="600" font-family="Arial, sans-serif" font-size="9" fill="#64748b">History</text>
+  <rect x="190" y="592" width="300" height="6" rx="3" fill="rgba(168, 85, 247, 0.12)"/>
+  <rect x="190" y="592" width="150" height="6" rx="3" fill="rgba(168, 85, 247, 0.6)"/>
+  <text x="502" y="600" font-family="Arial, sans-serif" font-size="9" fill="#a855f7">50%</text>
+
+  <text x="140" y="620" font-family="Arial, sans-serif" font-size="9" fill="#64748b">Geography</text>
+  <rect x="190" y="612" width="300" height="6" rx="3" fill="rgba(249, 115, 22, 0.12)"/>
+  <rect x="190" y="612" width="90" height="6" rx="3" fill="rgba(249, 115, 22, 0.6)"/>
+  <text x="502" y="620" font-family="Arial, sans-serif" font-size="9" fill="#fb923c">30%</text>
+
+  <!-- XP badge -->
+  <rect x="750" y="555" width="240" height="65" rx="10" fill="rgba(45, 212, 191, 0.08)" stroke="rgba(45, 212, 191, 0.2)" stroke-width="1"/>
+  <text x="870" y="580" font-family="Arial, sans-serif" font-size="11" fill="#94a3b8" text-anchor="middle">This Week</text>
+  <text x="870" y="602" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="#2DD4BF" text-anchor="middle">+340 XP</text>
+  <text x="870" y="616" font-family="Arial, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">🔥 7 day streak</text>
+
+  <!-- Floating particles -->
+  <circle cx="160" cy="740" r="2" fill="#2DD4BF" opacity="0.3">
+    <animate attributeName="opacity" values="0.1;0.5;0.1" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="1050" cy="150" r="2" fill="#a855f7" opacity="0.3">
+    <animate attributeName="opacity" values="0.2;0.6;0.2" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="1080" cy="690" r="1.5" fill="#2DD4BF" opacity="0.4">
+    <animate attributeName="cy" values="690;670;690" dur="4s" repeatCount="indefinite"/>
+  </circle>
+</svg>
