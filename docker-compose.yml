@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  surrealdb:
+    image: surrealdb/surrealdb:v2
+    restart: unless-stopped
+    command: start --log info --user root --pass root rocksdb:/mydata/mydatabase.db
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./surreal_data:/mydata
+    mem_limit: 200m
+
+  open-notebook:
+    image: lfnovo/open_notebook:v1-latest
+    restart: unless-stopped
+    ports:
+      - "5055:5055"
+      - "127.0.0.1:8502:8502"
+    volumes:
+      - ./notebook_data:/app/data
+    environment:
+      - OPEN_NOTEBOOK_ENCRYPTION_KEY=${OPEN_NOTEBOOK_ENCRYPTION_KEY}
+      - SURREAL_URL=ws://surrealdb:8000/rpc
+      - SURREAL_USER=root
+      - SURREAL_PASSWORD=root
+      - SURREAL_NAMESPACE=open_notebook
+      - SURREAL_DATABASE=open_notebook
+    depends_on:
+      - surrealdb
+    mem_limit: 500m
+
+  scrapling:
+    build: ./scrapling-service
+    restart: unless-stopped
+    ports:
+      - "8100:8100"
+    environment:
+      - SCRAPLING_SECRET=${SCRAPLING_SECRET}
+    mem_limit: 150m

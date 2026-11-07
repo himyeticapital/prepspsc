@@ -1,0 +1,119 @@
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="roomBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="800" fill="url(#roomBg)"/>
+
+  <!-- Decorative circles -->
+  <circle cx="100" cy="150" r="3" fill="#a855f7" opacity="0.4">
+    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="1050" cy="600" r="4" fill="#ec4899" opacity="0.5">
+    <animate attributeName="opacity" values="0.5;1;0.5" dur="4s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Room cards grid -->
+  <!-- Room 1: General Studies -->
+  <rect x="150" y="150" width="450" height="250" rx="20" fill="rgba(24, 24, 27, 0.7)" stroke="rgba(168, 85, 247, 0.4)" stroke-width="2"/>
+
+  <!-- Book icon -->
+  <rect x="180" y="185" width="30" height="40" rx="3" fill="#a855f7" opacity="0.6"/>
+  <rect x="187" y="185" width="16" height="40" fill="rgba(168, 85, 247, 0.3)"/>
+  <line x1="187" y1="205" x2="203" y2="205" stroke="#fafafa" stroke-width="1" opacity="0.5"/>
+
+  <text x="240" y="210" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="#fafafa">General Studies</text>
+  <rect x="170" y="240" width="400" height="35" rx="8" fill="rgba(168, 85, 247, 0.15)"/>
+  <circle cx="190" cy="257" r="8" fill="#22c55e"/>
+  <text x="210" y="263" font-family="Arial, sans-serif" font-size="14" fill="#a1a1aa">12 people studying</text>
+
+  <!-- User avatars -->
+  <circle cx="190" cy="320" r="20" fill="#a855f7" opacity="0.8"/>
+  <text x="190" y="328" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="white">A</text>
+
+  <circle cx="235" cy="320" r="20" fill="#ec4899" opacity="0.8"/>
+  <text x="235" y="328" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="white">B</text>
+
+  <circle cx="280" cy="320" r="20" fill="#8b5cf6" opacity="0.8"/>
+  <text x="280" y="328" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="white">C</text>
+
+  <circle cx="325" cy="320" r="20" fill="rgba(168, 85, 247, 0.3)" stroke="#a855f7" stroke-width="1"/>
+  <text x="325" y="328" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#a1a1aa">+9</text>
+
+  <rect x="450" y="310" width="100" height="35" rx="8" fill="#a855f7" opacity="0.9"/>
+  <text x="500" y="333" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Join</text>
+
+  <!-- Room 2: Mock Test Practice -->
+  <rect x="650" y="150" width="450" height="250" rx="20" fill="rgba(24, 24, 27, 0.7)" stroke="rgba(236, 72, 153, 0.4)" stroke-width="2"/>
+
+  <!-- Pencil/Test icon -->
+  <rect x="677" y="185" width="25" height="35" rx="2" fill="#ec4899" opacity="0.6" transform="rotate(-15 690 202)"/>
+  <circle cx="690" cy="195" r="15" fill="rgba(236, 72, 153, 0.3)"/>
+
+  <text x="740" y="210" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="#fafafa">Mock Test Practice</text>
+  <rect x="670" y="240" width="400" height="35" rx="8" fill="rgba(236, 72, 153, 0.15)"/>
+  <circle cx="690" cy="257" r="8" fill="#22c55e">
+    <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <text x="710" y="263" font-family="Arial, sans-serif" font-size="14" fill="#a1a1aa">8 people studying</text>
+
+  <circle cx="690" cy="320" r="20" fill="#ec4899" opacity="0.8"/>
+  <text x="690" y="328" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="white">D</text>
+
+  <circle cx="735" cy="320" r="20" fill="#a855f7" opacity="0.8"/>
+  <text x="735" y="328" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="white">E</text>
+
+  <circle cx="780" cy="320" r="20" fill="rgba(236, 72, 153, 0.3)" stroke="#ec4899" stroke-width="1"/>
+  <text x="780" y="328" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#a1a1aa">+6</text>
+
+  <rect x="950" y="310" width="100" height="35" rx="8" fill="#ec4899" opacity="0.9"/>
+  <text x="1000" y="333" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Join</text>
+
+  <!-- Room 3: Focused Study -->
+  <rect x="150" y="450" width="450" height="250" rx="20" fill="rgba(24, 24, 27, 0.7)" stroke="rgba(139, 92, 246, 0.4)" stroke-width="2"/>
+
+  <!-- Target/Focus icon -->
+  <circle cx="195" cy="500" r="20" fill="none" stroke="#8b5cf6" stroke-width="2"/>
+  <circle cx="195" cy="500" r="12" fill="none" stroke="#8b5cf6" stroke-width="2"/>
+  <circle cx="195" cy="500" r="5" fill="#8b5cf6"/>
+
+  <text x="240" y="510" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="#fafafa">Focused Study</text>
+  <rect x="170" y="540" width="400" height="35" rx="8" fill="rgba(139, 92, 246, 0.15)"/>
+  <circle cx="190" cy="557" r="8" fill="#22c55e"/>
+  <text x="210" y="563" font-family="Arial, sans-serif" font-size="14" fill="#a1a1aa">5 people studying</text>
+
+  <circle cx="190" cy="620" r="20" fill="#8b5cf6" opacity="0.8"/>
+  <text x="190" y="628" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="white">F</text>
+
+  <circle cx="235" cy="620" r="20" fill="#a855f7" opacity="0.8"/>
+  <text x="235" y="628" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="white">G</text>
+
+  <rect x="450" y="610" width="100" height="35" rx="8" fill="#8b5cf6" opacity="0.9"/>
+  <text x="500" y="633" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Join</text>
+
+  <!-- Room 4: Chill &amp; Study -->
+  <rect x="650" y="450" width="450" height="250" rx="20" fill="rgba(24, 24, 27, 0.7)" stroke="rgba(34, 197, 94, 0.4)" stroke-width="2"/>
+
+  <!-- Coffee/Chill icon -->
+  <rect x="675" y="510" width="35" height="25" rx="3" fill="#22c55e" opacity="0.6"/>
+  <ellipse cx="692" cy="503" rx="20" ry="8" fill="rgba(34, 197, 94, 0.3)"/>
+  <path d="M 685 490 Q 690 485 695 490" stroke="#22c55e" stroke-width="2" fill="none" opacity="0.5"/>
+
+  <text x="740" y="510" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="#fafafa">Chill &amp; Study</text>
+  <rect x="670" y="540" width="400" height="35" rx="8" fill="rgba(34, 197, 94, 0.15)"/>
+  <circle cx="690" cy="557" r="8" fill="#22c55e"/>
+  <text x="710" y="563" font-family="Arial, sans-serif" font-size="14" fill="#a1a1aa">15 people studying</text>
+
+  <circle cx="690" cy="620" r="20" fill="#22c55e" opacity="0.8"/>
+  <text x="690" y="628" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="white">H</text>
+
+  <circle cx="735" cy="620" r="20" fill="#10b981" opacity="0.8"/>
+  <text x="735" y="628" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="white">I</text>
+
+  <rect x="950" y="610" width="100" height="35" rx="8" fill="#22c55e" opacity="0.9"/>
+  <text x="1000" y="633" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">Join</text>
+</svg>

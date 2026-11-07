@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Anime Samurai - Dark mysterious warrior -->
+  <defs>
+    <linearGradient id="hair12" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1f2937"/>
+      <stop offset="100%" style="stop-color:#111827"/>
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="#6366f1"/>
+
+  <!-- Face -->
+  <circle cx="50" cy="52" r="21" fill="#f5dcc4"/>
+
+  <!-- Ears -->
+  <ellipse cx="29" cy="52" rx="3" ry="5" fill="#e8ccb4"/>
+  <ellipse cx="71" cy="52" rx="3" ry="5" fill="#e8ccb4"/>
+
+  <!-- Long samurai hair -->
+  <path d="M29 48 Q32 18 50 14 Q68 18 71 48 Q65 28 50 24 Q35 28 29 48" fill="url(#hair12)"/>
+  <!-- Long side hair -->
+  <path d="M29 48 Q25 55 26 75 Q28 80 32 78 Q30 60 32 50" fill="url(#hair12)"/>
+  <path d="M71 48 Q75 55 74 75 Q72 80 68 78 Q70 60 68 50" fill="url(#hair12)"/>
+  <!-- Top spikes -->
+  <path d="M38 22 L35 10 L45 20" fill="url(#hair12)"/>
+  <path d="M50 18 L50 6 L55 18" fill="url(#hair12)"/>
+  <path d="M62 22 L65 10 L55 20" fill="url(#hair12)"/>
+  <!-- Bangs -->
+  <path d="M32 42 Q38 38 42 44 L40 48 Q36 44 32 48" fill="url(#hair12)"/>
+  <path d="M68 42 Q62 38 58 44 L60 48 Q64 44 68 48" fill="url(#hair12)"/>
+
+  <!-- Intense anime eyes -->
+  <ellipse cx="40" cy="52" rx="5.5" ry="6.5" fill="white"/>
+  <ellipse cx="60" cy="52" rx="5.5" ry="6.5" fill="white"/>
+  <ellipse cx="41" cy="53" rx="4" ry="5" fill="#dc2626"/>
+  <ellipse cx="61" cy="53" rx="4" ry="5" fill="#dc2626"/>
+  <ellipse cx="41" cy="53" rx="2" ry="3" fill="#7f1d1d"/>
+  <ellipse cx="61" cy="53" r="2" ry="3" fill="#7f1d1d"/>
+  <circle cx="42" cy="51" r="1.8" fill="white"/>
+  <circle cx="62" cy="51" r="1.8" fill="white"/>
+
+  <!-- Sharp eyebrows -->
+  <path d="M34 44 L45 47" stroke="#111827" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M66 44 L55 47" stroke="#111827" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Nose -->
+  <path d="M50 55 L50 60" stroke="#d4b8a4" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Serious expression -->
+  <path d="M44 66 L56 66" stroke="#b8947c" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- Traditional collar/kimono -->
+  <path d="M26 85 Q26 70 40 68 L50 76 L60 68 Q74 70 74 85 L74 100 L26 100 Z" fill="#1f2937"/>
+  <path d="M40 68 L50 82 L60 68" fill="#374151"/>
+  <path d="M42 70 L50 80 L58 70" fill="#4b5563"/>
+  <!-- Red accent -->
+  <line x1="50" y1="76" x2="50" y2="100" stroke="#dc2626" stroke-width="3"/>
+</svg>

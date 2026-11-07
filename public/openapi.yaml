@@ -1,0 +1,1175 @@
+openapi: 3.1.0
+info:
+  title: PrepSPSC PYQ API
+  version: 5.0.0
+  description: >
+    Semantic search API for Previous Year Questions (PYQ) from Indian competitive
+    exams (Sikkim PSC / SPSC). Uses vector embeddings powered by Google Gemini for
+    intelligent question retrieval with hybrid semantic + keyword matching.
+
+    **AI Question Generation Reference**: This API is designed to be used as a
+    reference for AI-powered question generation. Fetch real PYQ questions with
+    rich metadata (topics, cognitive levels, difficulty) and use them as few-shot
+    examples to generate fresh questions that match real exam standards.
+  contact:
+    email: prepspsc@protonmail.com
+
+servers:
+  - url: https://qqqditxzghqzodvauxth.supabase.co/functions/v1
+    description: Production (Supabase Edge Functions)
+
+tags:
+  - name: Search
+    description: Semantic search endpoints for querying PYQ questions
+  - name: MockTest
+    description: Generate full mock tests with difficulty balancing
+  - name: Metadata
+    description: Available subjects, exam types, and paper patterns
+  - name: Progress
+    description: Track user answer history and performance
+  - name: Analytics
+    description: Performance analytics and leaderboard
+  - name: Bookmarks
+    description: Save and manage bookmarked questions
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /pyq-api:
+    post:
+      operationId: searchQuestions
+      summary: Search PYQ questions using semantic similarity
+      description: >
+        Performs a hybrid semantic + keyword search over the PYQ question bank.
+        The query is embedded using Gemini and matched against pre-computed
+        question embeddings via pgvector cosine distance. Results are ranked by
+        similarity score and filtered by subject.
+      tags:
+        - Search
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+                - subject
+              properties:
+                query:
+                  type: string
+                  minLength: 3
+                  description: Natural language search query describing the topic or concept to find questions about.
+                  example: "Fundamental Rights Article 21"
+                subject:
+                  type: string
+                  description: Subject to search within. Must match one of the available subjects returned by the GET endpoint.
+                  example: "Indian Polity"
+                limit:
+                  type: integer
+                  default: 8
+                  minimum: 1
+                  maximum: 20
+                  description: Maximum number of results to return.
+                  example: 10
+                threshold:
+                  type: number
+                  default: 0.3
+                  minimum: 0
+                  maximum: 1
+                  description: Minimum similarity score between 0 and 1. Higher values return fewer but more relevant results.
+                  example: 0.4
+                year_min:
+                  type: integer
+                  nullable: true
+                  description: >
+                    Exclude time-sensitive questions (current affairs, awards, appointments)
+                    older than this year. Defaults to current_year - 2 for mock tests.
+                    Set to null to include all years. Non-time-sensitive questions
+                    (polity, history, science) are never filtered regardless of this value.
+                  example: 2024
+                exclude_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  default: []
+                  description: List of question UUIDs to exclude from results, useful for avoiding duplicates across paginated or repeated queries.
+                  example:
+                    - "d290f1ee-6c54-4b01-90e6-d701748f0851"
+            examples:
+              basic_search:
+                summary: Basic search for polity questions
+                value:
+                  query: "Fundamental Rights Article 21"
+                  subject: "Indian Polity"
+              filtered_search:
+                summary: Search with custom limit and threshold
+                value:
+                  query: "Governor powers and functions"
+                  subject: "Indian Polity"
+                  limit: 5
+                  threshold: 0.5
+              excluding_seen:
+                summary: Exclude previously seen questions
+                value:
+                  query: "Environmental protection laws"
+                  subject: "Environment & Ecology"
+                  limit: 10
+                  exclude_ids:
+                    - "d290f1ee-6c54-4b01-90e6-d701748f0851"
+                    - "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+      responses:
+        "200":
+          description: Successful search with matched questions ranked by similarity.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  questions:
+                    type: array
+                    description: List of matched questions sorted by descending similarity score.
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          description: Unique identifier for the question.
+                          example: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+                        question:
+                          type: string
+                          description: The full question text.
+                          example: "Which of the following is NOT a Fundamental Right under Part III of the Indian Constitution?"
+                        options:
+                          type: array
+                          description: The answer options (typically four).
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                enum:
+                                  - a
+                                  - b
+                                  - c
+                                  - d
+                                description: Option identifier.
+                                example: "a"
+                              text:
+                                type: string
+                                description: The option text.
+                                example: "Right to Equality"
+                            required:
+                              - id
+                              - text
+                        correct_option_id:
+                          type: string
+                          enum:
+                            - a
+                            - b
+                            - c
+                            - d
+                          description: The identifier of the correct answer option.
+                          example: "c"
+                        explanation:
+                          type: string
+                          nullable: true
+                          description: Detailed explanation of the correct answer. May be null if no explanation is available.
+                          example: "Right to Property was removed as a Fundamental Right by the 44th Amendment Act, 1978."
+                        exam_name:
+                          type: string
+                          description: Name of the exam this question appeared in.
+                          example: "SPSC Prelims"
+                        exam_year:
+                          type: integer
+                          description: Year the exam was conducted.
+                          example: 2022
+                        difficulty:
+                          type: string
+                          enum:
+                            - easy
+                            - medium
+                            - hard
+                          description: Difficulty level of the question.
+                          example: "medium"
+                        high_yield:
+                          type: boolean
+                          description: Whether this question covers a frequently tested topic.
+                          example: true
+                        topics:
+                          type: array
+                          items:
+                            type: string
+                          description: Specific topics covered by this question. Use these to understand what areas are tested and to guide AI question generation on similar topics.
+                          example: ["Fundamental Rights", "Article 21", "Right to Life"]
+                        cognitive_level:
+                          type: string
+                          enum:
+                            - remember
+                            - understand
+                            - apply
+                            - analyze
+                          description: >
+                            Bloom's taxonomy cognitive level. Use this to calibrate
+                            the thinking depth when generating similar questions.
+                            'remember' = recall facts, 'understand' = explain concepts,
+                            'apply' = use in new situations, 'analyze' = break down and evaluate.
+                          example: "understand"
+                        is_time_sensitive:
+                          type: boolean
+                          description: Whether this question covers time-sensitive content (current affairs, awards, appointments) that may become outdated.
+                          example: false
+                        similarity:
+                          type: number
+                          format: float
+                          description: Cosine similarity score between 0 and 1 indicating how closely the question matches the search query.
+                          example: 0.87
+                      required:
+                        - id
+                        - question
+                        - options
+                        - correct_option_id
+                        - exam_name
+                        - exam_year
+                        - difficulty
+                        - high_yield
+                        - topics
+                        - cognitive_level
+                        - similarity
+                  count:
+                    type: integer
+                    description: Total number of questions returned in this response.
+                    example: 8
+                  search_time_ms:
+                    type: integer
+                    description: Time taken to perform the search in milliseconds.
+                    example: 142
+                required:
+                  - questions
+                  - count
+                  - search_time_ms
+              examples:
+                successful_search:
+                  summary: A successful search returning two questions
+                  value:
+                    questions:
+                      - id: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+                        question: "Which of the following is NOT a Fundamental Right under Part III of the Indian Constitution?"
+                        options:
+                          - id: "a"
+                            text: "Right to Equality"
+                          - id: "b"
+                            text: "Right to Freedom"
+                          - id: "c"
+                            text: "Right to Property"
+                          - id: "d"
+                            text: "Right against Exploitation"
+                        correct_option_id: "c"
+                        explanation: "Right to Property was removed as a Fundamental Right by the 44th Amendment Act, 1978."
+                        exam_name: "SPSC Prelims"
+                        exam_year: 2022
+                        difficulty: "medium"
+                        high_yield: true
+                        similarity: 0.87
+                      - id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                        question: "Article 21 of the Indian Constitution guarantees:"
+                        options:
+                          - id: "a"
+                            text: "Right to Equality"
+                          - id: "b"
+                            text: "Protection of Life and Personal Liberty"
+                          - id: "c"
+                            text: "Right to Freedom of Religion"
+                          - id: "d"
+                            text: "Right to Constitutional Remedies"
+                        correct_option_id: "b"
+                        explanation: "Article 21 states that no person shall be deprived of his life or personal liberty except according to procedure established by law."
+                        exam_name: "SPSC Prelims"
+                        exam_year: 2021
+                        difficulty: "easy"
+                        high_yield: true
+                        similarity: 0.82
+                    count: 2
+                    search_time_ms: 142
+        "400":
+          description: Invalid request parameters.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                missing_query:
+                  summary: Missing required query field
+                  value:
+                    error:
+                      code: "INVALID_REQUEST"
+                      message: "query is required and must be at least 3 characters"
+                invalid_subject:
+                  summary: Invalid subject
+                  value:
+                    error:
+                      code: "INVALID_REQUEST"
+                      message: "subject is required"
+        "401":
+          description: Missing or invalid authentication token.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                missing_token:
+                  summary: No authorization header provided
+                  value:
+                    error:
+                      code: "UNAUTHORIZED"
+                      message: "Missing or invalid API key"
+        "403":
+          description: API key is valid but does not have access to this resource.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                forbidden:
+                  summary: API key lacks required permissions
+                  value:
+                    error:
+                      code: "FORBIDDEN"
+                      message: "API key does not have access to this resource"
+        "429":
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                rate_limited:
+                  summary: Too many requests
+                  value:
+                    error:
+                      code: "RATE_LIMITED"
+                      message: "Rate limit exceeded. Please try again later."
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                server_error:
+                  summary: Unexpected server error
+                  value:
+                    error:
+                      code: "INTERNAL_ERROR"
+                      message: "An unexpected error occurred"
+
+    get:
+      operationId: listSubjects
+      summary: Get available subjects and exam types
+      description: >
+        Returns the list of subjects that have indexed PYQ questions available
+        for search, along with question counts per subject and all distinct exam
+        names in the database. Use this to discover valid values for the
+        `subject` field in the POST search endpoint.
+      tags:
+        - Metadata
+      security:
+        - ApiKeyAuth: []
+      responses:
+        "200":
+          description: List of available subjects with question counts and exam names.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subjects:
+                    type: array
+                    description: Available subjects with the number of indexed questions in each.
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: Subject name, usable as the `subject` parameter in search.
+                          example: "Indian Polity"
+                        count:
+                          type: integer
+                          description: Number of questions available in this subject.
+                          example: 245
+                      required:
+                        - name
+                        - count
+                  exam_names:
+                    type: array
+                    description: List of distinct exam names present in the question bank.
+                    items:
+                      type: string
+                    example:
+                      - "SPSC Prelims"
+                      - "SPSC Mains"
+                required:
+                  - subjects
+                  - exam_names
+              examples:
+                available_subjects:
+                  summary: Available subjects and exams
+                  value:
+                    subjects:
+                      - name: "Indian Polity"
+                        count: 245
+                      - name: "Indian History"
+                        count: 189
+                      - name: "Geography"
+                        count: 156
+                      - name: "Environment & Ecology"
+                        count: 98
+                      - name: "General Science"
+                        count: 134
+                      - name: "Current Affairs"
+                        count: 67
+                      - name: "Sikkim GK"
+                        count: 312
+                    exam_names:
+                      - "SPSC Prelims"
+                      - "SPSC Mains"
+        "401":
+          description: Missing or invalid authentication token.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                missing_token:
+                  summary: No authorization header provided
+                  value:
+                    error:
+                      code: "UNAUTHORIZED"
+                      message: "Missing or invalid API key"
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                server_error:
+                  summary: Unexpected server error
+                  value:
+                    error:
+                      code: "INTERNAL_ERROR"
+                      message: "An unexpected error occurred"
+
+  /pyq-api/mock-test:
+    post:
+      operationId: generateMockTest
+      summary: Generate a complete mock test with difficulty balancing
+      description: >
+        Generates a full mock test following real SPSC exam patterns. Fetches questions
+        across multiple subjects with the correct distribution, balanced by difficulty
+        (easy/medium/hard). Supports configurable difficulty mix and exclusion of
+        previously seen questions. One API call = one complete test.
+
+        **For AI builders**: Use the returned questions (with topics, cognitive_level,
+        difficulty) as reference examples to generate additional fresh questions with
+        your own AI. This lets you create unlimited practice tests using real exam
+        patterns as the foundation.
+      tags:
+        - MockTest
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - pattern
+              properties:
+                pattern:
+                  type: string
+                  enum:
+                    # Core / General
+                    - undersecretary-prelims
+                    - si-police-prelims
+                    - general-prelims
+                    - spsc-mains-gs1
+                    - spsc-mains-gs2
+                    - junior-engineer-prelims
+                    - forest-ranger-prelims
+                    - quick-practice-30
+                    # Combined Recruitment / Civil Services
+                    - combined-mains-gs3
+                    - combined-mains-english
+                    - sscs-prelims
+                    # Police / Law Enforcement
+                    - si-police-mains
+                    - si-excise
+                    - sub-jailer
+                    # Fire Service
+                    - sub-fire-officer
+                    # Engineering
+                    - assistant-engineer-civil
+                    - assistant-engineer-electrical
+                    - assistant-engineer-mechanical
+                    - assistant-engineer-agriculture
+                    # Medical / Health
+                    - gdmo
+                    - veterinary-officer
+                    - dental-surgeon
+                    - specialist-sr-grade
+                    - staff-nurse
+                    - paramedical
+                    - health-educator
+                    - mphw
+                    - drug-inspector
+                    - food-safety-officer
+                    - pharmacist-ayush
+                    - yoga-instructor-ayush
+                    - scientific-officer-ayush
+                    - tutor-clinical-instructor
+                    # Administrative / Clerical
+                    - ldc-prelims
+                    - accounts-clerk
+                    - stenographer
+                    - cooperative-inspector
+                    - statistical-inspector
+                    - revenue-inspector
+                    - revenue-surveyor
+                    - commercial-tax-inspector
+                    # Forestry / Environment / Fisheries
+                    - fisheries-officer
+                    - assistant-director-fisheries
+                    - livestock-assistant
+                    # Education
+                    - lecturer-diet
+                    - iti-instructor
+                    - principal-iti
+                    - assistant-professor-sheda
+                    # Other Specialized
+                    - assistant-town-planner
+                    - assistant-architect
+                    - assistant-geologist
+                    - digital-analyst
+                    - assistant-programmer
+                    - assistant-director-it
+                    - lab-assistant
+                    - field-assistant
+                    - ado-wdo-hdo
+                    - senior-information-assistant
+                    - sub-editor
+                    - inspector-legal-metrology
+                    - photographer
+                    - script-writer
+                    - feed-mill-operator
+                    - printing-stationery
+                  description: >
+                    Exam pattern ID (64 available). Determines question distribution,
+                    total count, duration, and marking scheme. Use GET /pyq-api/patterns
+                    to see all options with details.
+                  example: "undersecretary-prelims"
+                difficulty_mix:
+                  type: object
+                  description: >
+                    Custom difficulty distribution (percentages, must sum to 100).
+                    Defaults to 30% easy, 50% medium, 20% hard.
+                  properties:
+                    easy:
+                      type: integer
+                      minimum: 0
+                      maximum: 100
+                      default: 30
+                    medium:
+                      type: integer
+                      minimum: 0
+                      maximum: 100
+                      default: 50
+                    hard:
+                      type: integer
+                      minimum: 0
+                      maximum: 100
+                      default: 20
+                year_min:
+                  type: integer
+                  nullable: true
+                  description: >
+                    Exclude time-sensitive questions older than this year.
+                    Defaults to current_year - 2. Set to null to include all years.
+                  example: 2024
+                exclude_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  default: []
+                  description: Question UUIDs to exclude (avoids repeating questions across tests).
+            examples:
+              undersecretary:
+                summary: Generate Undersecretary Prelims mock test
+                value:
+                  pattern: "undersecretary-prelims"
+              custom_difficulty:
+                summary: Harder test with custom difficulty mix
+                value:
+                  pattern: "si-police-prelims"
+                  difficulty_mix:
+                    easy: 10
+                    medium: 40
+                    hard: 50
+      responses:
+        "200":
+          description: Complete mock test with sections and metadata.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  test:
+                    type: object
+                    description: Test metadata and scoring rules.
+                    properties:
+                      name:
+                        type: string
+                        example: "Under Secretary Preliminary Examination"
+                      description:
+                        type: string
+                      pattern:
+                        type: string
+                        example: "undersecretary-prelims"
+                      total_questions:
+                        type: integer
+                        example: 95
+                      target_questions:
+                        type: integer
+                        description: Target count from the pattern (actual may be lower if insufficient questions).
+                        example: 100
+                      duration_minutes:
+                        type: integer
+                        example: 120
+                      negative_marking:
+                        type: boolean
+                        example: true
+                      negative_mark_value:
+                        type: number
+                        description: Points deducted per wrong answer (0 if no negative marking).
+                        example: 0.25
+                      marks_per_question:
+                        type: number
+                        example: 1
+                      total_marks:
+                        type: number
+                        example: 95
+                  sections:
+                    type: array
+                    description: Test sections, one per subject.
+                    items:
+                      type: object
+                      properties:
+                        subject:
+                          type: string
+                          example: "Indian Polity"
+                        target_count:
+                          type: integer
+                          example: 15
+                        actual_count:
+                          type: integer
+                          example: 15
+                        questions:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/Question"
+                  generation_time_ms:
+                    type: integer
+                    example: 2340
+        "400":
+          description: Invalid pattern or request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Missing or invalid API key.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit or quota exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /pyq-api/patterns:
+    get:
+      operationId: listExamPatterns
+      summary: List available exam patterns for mock test generation
+      description: >
+        Returns all available exam patterns with their question distribution,
+        duration, and marking scheme. Use the pattern `id` as the `pattern`
+        parameter in the mock-test endpoint.
+      tags:
+        - Metadata
+      security:
+        - ApiKeyAuth: []
+      responses:
+        "200":
+          description: Available exam patterns.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  patterns:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "undersecretary-prelims"
+                        name:
+                          type: string
+                          example: "Under Secretary Preliminary Examination"
+                        description:
+                          type: string
+                        total_questions:
+                          type: integer
+                          example: 100
+                        duration_minutes:
+                          type: integer
+                          example: 120
+                        negative_marking:
+                          type: boolean
+                        sections:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              subject:
+                                type: string
+                              count:
+                                type: integer
+              examples:
+                patterns:
+                  summary: Available exam patterns
+                  value:
+                    patterns:
+                      - id: "undersecretary-prelims"
+                        name: "Under Secretary Preliminary Examination"
+                        description: "SPSC Under Secretary Prelims — General Studies paper"
+                        total_questions: 100
+                        duration_minutes: 120
+                        negative_marking: true
+                        sections:
+                          - subject: "Indian Polity"
+                            count: 15
+                          - subject: "History"
+                            count: 15
+                          - subject: "General Knowledge"
+                            count: 20
+        "401":
+          description: Missing or invalid API key.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /pyq-api/progress:
+    post:
+      operationId: recordProgress
+      summary: Record a user's answer to a question
+      description: >
+        Track answer history for your app's users. Records which option was selected,
+        whether it was correct, time spent, and auto-calculates attempt number.
+        This data powers analytics and leaderboard features.
+      tags:
+        - Progress
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - external_user_id
+                - question_id
+                - selected_option
+                - is_correct
+              properties:
+                external_user_id:
+                  type: string
+                  description: Your app's user identifier (opaque to our system).
+                question_id:
+                  type: string
+                  format: uuid
+                  description: UUID of the question answered.
+                selected_option:
+                  type: string
+                  enum: [a, b, c, d]
+                is_correct:
+                  type: boolean
+                time_spent_seconds:
+                  type: integer
+                  description: Optional time spent on the question.
+      responses:
+        "200":
+          description: Progress recorded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recorded:
+                    type: boolean
+                  attempt_number:
+                    type: integer
+                  is_correct:
+                    type: boolean
+
+    get:
+      operationId: getProgress
+      summary: Get a user's answer history
+      description: Returns paginated answer history with question details.
+      tags:
+        - Progress
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Paginated answer history.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  progress:
+                    type: array
+                    items:
+                      type: object
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+
+  /pyq-api/analytics:
+    get:
+      operationId: getAnalytics
+      summary: Get performance analytics for a user
+      description: >
+        Returns comprehensive analytics: total questions attempted, accuracy by subject,
+        accuracy by difficulty, and 30-day activity trends.
+      tags:
+        - Analytics
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Performance analytics.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_questions_attempted:
+                    type: integer
+                  correct_answers:
+                    type: integer
+                  accuracy_percent:
+                    type: number
+                  subjects:
+                    type: array
+                    items:
+                      type: object
+                  difficulty_breakdown:
+                    type: array
+                    items:
+                      type: object
+                  recent_activity:
+                    type: array
+                    items:
+                      type: object
+
+  /pyq-api/leaderboard:
+    get:
+      operationId: getLeaderboard
+      summary: Get leaderboard for your app's users
+      description: >
+        Returns ranked leaderboard of users by correct answers and accuracy.
+        Supports weekly, monthly, and all-time ranges. Minimum 5 questions to appear.
+      tags:
+        - Analytics
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: time_range
+          in: query
+          schema:
+            type: string
+            enum: [week, month, all_time]
+            default: all_time
+      responses:
+        "200":
+          description: Leaderboard data.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  time_range:
+                    type: string
+                  total_participants:
+                    type: integer
+                  leaderboard:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        rank:
+                          type: integer
+                        external_user_id:
+                          type: string
+                        total_attempted:
+                          type: integer
+                        total_correct:
+                          type: integer
+                        accuracy_percent:
+                          type: number
+                        score:
+                          type: number
+
+  /pyq-api/bookmarks:
+    post:
+      operationId: addBookmark
+      summary: Bookmark a question for a user
+      description: Saves a question to the user's bookmarks. Upserts if already bookmarked.
+      tags:
+        - Bookmarks
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - external_user_id
+                - question_id
+              properties:
+                external_user_id:
+                  type: string
+                question_id:
+                  type: string
+                  format: uuid
+                note:
+                  type: string
+                  description: Optional note to attach.
+      responses:
+        "200":
+          description: Bookmark saved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bookmarked:
+                    type: boolean
+
+    get:
+      operationId: getBookmarks
+      summary: Get a user's bookmarked questions
+      description: Returns paginated bookmarks with full question details.
+      tags:
+        - Bookmarks
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Paginated bookmarks.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bookmarks:
+                    type: array
+                    items:
+                      type: object
+                  total:
+                    type: integer
+
+    delete:
+      operationId: removeBookmark
+      summary: Remove a bookmark
+      description: Removes a question from the user's bookmarks.
+      tags:
+        - Bookmarks
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - external_user_id
+                - question_id
+              properties:
+                external_user_id:
+                  type: string
+                question_id:
+                  type: string
+                  format: uuid
+      responses:
+        "200":
+          description: Bookmark removed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  removed:
+                    type: boolean
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      description: >
+        API key in the format `sk_live_<32 hex characters>`.
+        Obtain your key from the PrepSPSC admin dashboard.
+        Include it in the Authorization header as: `Bearer sk_live_...`
+
+  schemas:
+    Question:
+      type: object
+      description: >
+        A PYQ question with options, answer, and rich metadata.
+        Use these fields as a reference when generating new questions with AI:
+        topics for subject coverage, cognitive_level for thinking depth,
+        difficulty for calibration.
+      properties:
+        id:
+          type: string
+          format: uuid
+        question:
+          type: string
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                enum: [a, b, c, d]
+              text:
+                type: string
+        correct_option_id:
+          type: string
+          enum: [a, b, c, d]
+        explanation:
+          type: string
+          nullable: true
+        exam_name:
+          type: string
+        exam_year:
+          type: integer
+        difficulty:
+          type: string
+          enum: [easy, medium, hard]
+        high_yield:
+          type: boolean
+        topics:
+          type: array
+          items:
+            type: string
+          description: Specific topics covered. Use for AI generation targeting.
+        cognitive_level:
+          type: string
+          enum: [remember, understand, apply, analyze]
+          description: Bloom's taxonomy level for calibrating AI-generated question depth.
+        is_time_sensitive:
+          type: boolean
+          description: Whether question content may become outdated (current affairs, awards, etc.).
+        similarity:
+          type: number
+          format: float
+
+    ErrorResponse:
+      type: object
+      description: Standard error response returned by all endpoints on failure.
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code.
+              example: "INVALID_REQUEST"
+            message:
+              type: string
+              description: Human-readable error description.
+              example: "query is required and must be at least 3 characters"
+          required:
+            - code
+            - message
+      required:
+        - error

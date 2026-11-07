@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Cool Chad Builder - Mohawk + Sunglasses -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d9488"/>
+      <stop offset="100%" style="stop-color:#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="mohawk" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2dd4bf"/>
+      <stop offset="50%" style="stop-color:#14b8a6"/>
+      <stop offset="100%" style="stop-color:#0d9488"/>
+    </linearGradient>
+    <linearGradient id="shades" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="url(#bgGrad)"/>
+
+  <!-- Face -->
+  <circle cx="50" cy="48" r="22" fill="#d4a574"/>
+
+  <!-- Ears -->
+  <ellipse cx="28" cy="48" rx="4" ry="6" fill="#c49a6c"/>
+  <ellipse cx="72" cy="48" rx="4" ry="6" fill="#c49a6c"/>
+
+  <!-- Mohawk hair - tall and cool -->
+  <path d="M40 28 Q42 8 50 4 Q58 8 60 28 L58 34 Q50 18 42 34 Z" fill="url(#mohawk)"/>
+  <path d="M43 34 Q45 16 50 12 Q55 16 57 34 L55 38 Q50 26 45 38 Z" fill="#14b8a6"/>
+  <path d="M45 38 Q47 24 50 20 Q53 24 55 38 L53 40 Q50 32 47 40 Z" fill="#0d9488"/>
+
+  <!-- Side fade -->
+  <path d="M30 42 Q28 35 34 30 L42 32 Q36 38 34 45 Z" fill="#2a2a3a"/>
+  <path d="M70 42 Q72 35 66 30 L58 32 Q64 38 66 45 Z" fill="#2a2a3a"/>
+
+  <!-- Cool Sunglasses - Aviator style -->
+  <path d="M30 46 Q30 42 34 42 L44 42 Q48 42 48 46 L48 52 Q48 56 44 56 L34 56 Q30 56 30 52 Z" fill="url(#shades)"/>
+  <path d="M52 46 Q52 42 56 42 L66 42 Q70 42 70 46 L70 52 Q70 56 66 56 L56 56 Q52 56 52 52 Z" fill="url(#shades)"/>
+  <!-- Lens shine -->
+  <path d="M32 44 L38 44 L34 49 Z" fill="white" opacity="0.15"/>
+  <path d="M54 44 L60 44 L56 49 Z" fill="white" opacity="0.15"/>
+  <!-- Bridge -->
+  <path d="M48 48 Q50 46 52 48" stroke="#1e293b" stroke-width="2.5" fill="none"/>
+  <!-- Arms -->
+  <path d="M30 47 L26 45" stroke="#1e293b" stroke-width="2.5"/>
+  <path d="M70 47 L74 45" stroke="#1e293b" stroke-width="2.5"/>
+
+  <!-- Confident smirk -->
+  <path d="M40 62 Q50 68 60 62" stroke="#8b6f5c" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M58 61 L63 60" stroke="#8b6f5c" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Light stubble -->
+  <ellipse cx="50" cy="66" rx="10" ry="4" fill="#c49a6c" opacity="0.3"/>
+
+  <!-- Neck -->
+  <rect x="42" y="68" width="16" height="10" fill="#d4a574"/>
+
+  <!-- Cool teal hoodie -->
+  <path d="M22 90 Q22 75 36 72 L50 76 L64 72 Q78 75 78 90 L78 100 L22 100 Z" fill="#0f766e"/>
+  <!-- Hoodie inner/collar -->
+  <path d="M40 72 Q50 80 60 72" fill="#115e59"/>
+  <!-- Hoodie strings -->
+  <line x1="44" y1="78" x2="44" y2="88" stroke="#134e4a" stroke-width="1.5"/>
+  <line x1="56" y1="78" x2="56" y2="88" stroke="#134e4a" stroke-width="1.5"/>
+  <circle cx="44" cy="88" r="2" fill="#134e4a"/>
+  <circle cx="56" cy="88" r="2" fill="#134e4a"/>
+</svg>

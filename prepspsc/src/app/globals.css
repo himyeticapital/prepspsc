@@ -1,0 +1,859 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Light Theme */
+:root {
+  --radius: 0.625rem;
+  /* Background */
+  --background: #fafafa;
+  --foreground: #09090b;
+  /* Cards */
+  --card: #ffffff;
+  --card-foreground: #09090b;
+  /* Popover */
+  --popover: #ffffff;
+  --popover-foreground: #09090b;
+  /* Primary - Teal */
+  --primary: #0d9488;
+  --primary-foreground: #ffffff;
+  /* Secondary */
+  --secondary: #f4f4f5;
+  --secondary-foreground: #09090b;
+  /* Muted */
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  /* Accent - Orange (for streaks) */
+  --accent: #f97316;
+  --accent-foreground: #ffffff;
+  /* Destructive - Red (for premium/locked) */
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  /* Border */
+  --border: #e4e4e7;
+  /* Input */
+  --input: #e4e4e7;
+  /* Ring */
+  --ring: #0d9488;
+  /* Chart Colors */
+  --chart-1: #0d9488;
+  --chart-2: #f97316;
+  --chart-3: #ef4444;
+  --chart-4: #a855f7;
+  --chart-5: #22d3ee;
+  /* Sidebar */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #09090b;
+  --sidebar-primary: #0d9488;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f4f4f5;
+  --sidebar-accent-foreground: #09090b;
+  --sidebar-border: #e4e4e7;
+  --sidebar-ring: #0d9488;
+}
+
+/* Dark Theme */
+.dark {
+  /* Background */
+  --background: #09090b;
+  --foreground: #fafafa;
+  /* Cards */
+  --card: #18181b;
+  --card-foreground: #fafafa;
+  /* Popover */
+  --popover: #18181b;
+  --popover-foreground: #fafafa;
+  /* Primary - Teal */
+  --primary: #2dd4bf;
+  --primary-foreground: #09090b;
+  /* Secondary */
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  /* Muted */
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  /* Accent - Orange (for streaks) */
+  --accent: #f97316;
+  --accent-foreground: #09090b;
+  /* Destructive - Red (for premium/locked) */
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  /* Border */
+  --border: rgba(255, 255, 255, 0.1);
+  /* Input */
+  --input: rgba(255, 255, 255, 0.15);
+  /* Ring */
+  --ring: #2dd4bf;
+  /* Chart Colors */
+  --chart-1: #2dd4bf;
+  --chart-2: #f97316;
+  --chart-3: #ef4444;
+  --chart-4: #a855f7;
+  --chart-5: #22d3ee;
+  /* Sidebar */
+  --sidebar: #18181b;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #2dd4bf;
+  --sidebar-primary-foreground: #09090b;
+  --sidebar-accent: #27272a;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #2dd4bf;
+}
+
+/* Lofi Theme - Cozy warm tones with transparent elements */
+.lofi {
+  /* Background - warm dark */
+  --background: #1a1612;
+  --foreground: #f5f0e8;
+  /* Cards - warm translucent */
+  --card: rgba(45, 35, 28, 0.85);
+  --card-foreground: #f5f0e8;
+  /* Popover */
+  --popover: rgba(45, 35, 28, 0.95);
+  --popover-foreground: #f5f0e8;
+  /* Primary - Warm amber/gold */
+  --primary: #e8b86d;
+  --primary-foreground: #1a1612;
+  /* Secondary */
+  --secondary: rgba(60, 48, 38, 0.7);
+  --secondary-foreground: #f5f0e8;
+  /* Muted */
+  --muted: rgba(60, 48, 38, 0.5);
+  --muted-foreground: #c4b8a8;
+  /* Accent - Soft orange */
+  --accent: #d4956a;
+  --accent-foreground: #1a1612;
+  /* Destructive */
+  --destructive: #c45c4d;
+  --destructive-foreground: #f5f0e8;
+  /* Border - warm translucent */
+  --border: rgba(232, 184, 109, 0.15);
+  /* Input */
+  --input: rgba(232, 184, 109, 0.1);
+  /* Ring */
+  --ring: #e8b86d;
+  /* Chart Colors - warm palette */
+  --chart-1: #e8b86d;
+  --chart-2: #d4956a;
+  --chart-3: #c45c4d;
+  --chart-4: #a87b5d;
+  --chart-5: #8b9e82;
+  /* Sidebar - warm dark */
+  --sidebar: rgba(30, 24, 20, 0.9);
+  --sidebar-foreground: #f5f0e8;
+  --sidebar-primary: #e8b86d;
+  --sidebar-primary-foreground: #1a1612;
+  --sidebar-accent: rgba(60, 48, 38, 0.5);
+  --sidebar-accent-foreground: #f5f0e8;
+  --sidebar-border: rgba(232, 184, 109, 0.1);
+  --sidebar-ring: #e8b86d;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+}
+
+@layer base {
+  *, *::before, *::after {
+    @apply border-border outline-ring/50;
+    box-sizing: border-box;
+  }
+  html {
+    overflow-x: hidden !important;
+    overflow-y: scroll;
+    max-width: 100%;
+    width: 100%;
+  }
+  body {
+    @apply bg-background text-foreground;
+    overflow-x: hidden !important;
+    overflow-y: auto;
+    max-width: 100%;
+    width: 100%;
+    position: relative;
+  }
+  /* Prevent any element from causing horizontal overflow */
+  #__next, main, .container, [class*="widget-glass"], [class*="glass-card"] {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  /* Ensure all block elements respect width - use 100% not 100vw to account for scrollbar */
+  div, section, article, aside, header, footer, main, nav {
+    max-width: 100%;
+  }
+  /* Force word breaks to prevent text overflow */
+  p, h1, h2, h3, h4, h5, h6, span, a, button {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+}
+
+/* Glassmorphism Card Style */
+.glass-card {
+  background: rgba(248, 250, 252, 0.75);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.dark .glass-card {
+  background: rgba(24, 24, 27, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+/* Premium/Locked Card Glow */
+.premium-glow {
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+/* Primary Button Glow */
+.primary-glow {
+  box-shadow: 0 0 20px rgba(45, 212, 191, 0.3);
+}
+
+/* Streak Fire Glow */
+.streak-glow {
+  box-shadow: 0 0 20px rgba(249, 115, 22, 0.4);
+}
+
+/* Anti-copy for test questions */
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* Custom scrollbar for chat widgets and glass elements */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* Light mode custom scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.dark .custom-scrollbar {
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.lofi .custom-scrollbar {
+  scrollbar-color: rgba(232, 184, 109, 0.3) transparent;
+}
+
+.lofi .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(232, 184, 109, 0.3);
+}
+
+.lofi .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(232, 184, 109, 0.5);
+}
+
+/* Hide scrollbar but allow scrolling */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(135deg, #2dd4bf 0%, #22d3ee 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Premium Gradient */
+.premium-gradient {
+  background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+}
+
+/* ============================================
+   OTAKUFY STYLES - Immersive Study Dashboard
+   ============================================ */
+
+/* Otakufy Glass Morphism - Heavy blur for overlays */
+.otakufy-glass {
+  background: rgba(248, 250, 252, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.dark .otakufy-glass {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+/* Widget Glass - For floating widget panels */
+.widget-glass {
+  background: rgba(248, 250, 252, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.dark .widget-glass {
+  background: rgba(24, 24, 27, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Dock Glass - Left sidebar */
+.dock-glass {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+}
+
+.dark .dock-glass {
+  background: rgba(0, 0, 0, 0.4);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+}
+
+/* Navbar Transparent */
+.navbar-transparent {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark .navbar-transparent {
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Dock Button - Always light text since dock is dark in both themes */
+.dock-button {
+  @apply w-12 h-12 rounded-xl flex items-center justify-center;
+  @apply bg-transparent text-white/60;
+  @apply transition-all duration-200;
+}
+
+.dock-button:hover {
+  @apply bg-white/10 text-white;
+}
+
+.dock-button.active {
+  @apply bg-primary/20 text-primary;
+  box-shadow: 0 0 20px rgba(45, 212, 191, 0.3);
+}
+
+/* Force light text on dark glass elements (dock, navbar) */
+.dark-glass-text {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.dark-glass-text-muted {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Music Equalizer Animation */
+@keyframes equalizer {
+  0%, 100% { height: 4px; }
+  50% { height: 16px; }
+}
+
+.equalizer-bar {
+  @apply w-1 bg-primary rounded-full;
+  animation: equalizer 0.8s ease-in-out infinite;
+}
+
+.equalizer-bar:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.equalizer-bar:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Feature Chip */
+.feature-chip {
+  @apply px-4 py-2 rounded-full;
+  @apply flex items-center gap-2;
+  @apply text-sm text-white/80;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Widget size variants */
+.widget-sm {
+  width: 320px;
+  max-height: 400px;
+}
+
+.widget-md {
+  width: 400px;
+  max-height: 500px;
+}
+
+.widget-lg {
+  width: 500px;
+  max-height: 600px;
+}
+
+/* Mobile widget (full screen sheet) */
+@media (max-width: 768px) {
+  .widget-sm,
+  .widget-md,
+  .widget-lg {
+    width: 100%;
+    max-width: 100%;
+    max-height: 85vh;
+  }
+}
+
+/* Subtle text shadow for readability over backgrounds */
+.text-shadow {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================
+   LIGHT MODE TEXT COLOR OVERRIDES
+   Forces proper contrast in glass elements
+   ============================================ */
+
+/* Glass elements get dark text in light mode */
+.glass-card,
+.otakufy-glass,
+.widget-glass {
+  color: #1f2937;
+}
+
+.dark .glass-card,
+.dark .otakufy-glass,
+.dark .widget-glass {
+  color: #fafafa;
+}
+
+/* Override text-white utilities inside glass elements for light mode */
+.glass-card .text-white,
+.otakufy-glass .text-white,
+.widget-glass .text-white {
+  color: #1f2937 !important;
+}
+
+.dark .glass-card .text-white,
+.dark .otakufy-glass .text-white,
+.dark .widget-glass .text-white {
+  color: #ffffff !important;
+}
+
+/* Muted text in glass elements */
+.glass-card .text-white\/40,
+.glass-card .text-white\/50,
+.glass-card .text-white\/60,
+.glass-card .text-white\/70,
+.otakufy-glass .text-white\/40,
+.otakufy-glass .text-white\/50,
+.otakufy-glass .text-white\/60,
+.otakufy-glass .text-white\/70,
+.widget-glass .text-white\/40,
+.widget-glass .text-white\/50,
+.widget-glass .text-white\/60,
+.widget-glass .text-white\/70 {
+  color: #6b7280 !important;
+}
+
+/* text-white/30 -> 45% for better readability */
+.dark .glass-card .text-white\/30,
+.dark .otakufy-glass .text-white\/30,
+.dark .widget-glass .text-white\/30 {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+/* text-white/40 -> 52% */
+.dark .glass-card .text-white\/40,
+.dark .otakufy-glass .text-white\/40,
+.dark .widget-glass .text-white\/40 {
+  color: rgba(255, 255, 255, 0.52) !important;
+}
+
+/* text-white/50 -> 62% */
+.dark .glass-card .text-white\/50,
+.dark .otakufy-glass .text-white\/50,
+.dark .widget-glass .text-white\/50 {
+  color: rgba(255, 255, 255, 0.62) !important;
+}
+
+/* text-white/60 -> 72% */
+.dark .glass-card .text-white\/60,
+.dark .otakufy-glass .text-white\/60,
+.dark .widget-glass .text-white\/60 {
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+/* text-white/70 -> 80% */
+.dark .glass-card .text-white\/70,
+.dark .otakufy-glass .text-white\/70,
+.dark .widget-glass .text-white\/70 {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Border colors in glass elements */
+.glass-card .border-white\/10,
+.glass-card .border-white\/20,
+.otakufy-glass .border-white\/10,
+.otakufy-glass .border-white\/20,
+.widget-glass .border-white\/10,
+.widget-glass .border-white\/20 {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+.dark .glass-card .border-white\/10,
+.dark .glass-card .border-white\/20,
+.dark .otakufy-glass .border-white\/10,
+.dark .otakufy-glass .border-white\/20,
+.dark .widget-glass .border-white\/10,
+.dark .widget-glass .border-white\/20 {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Background colors in glass elements */
+.glass-card .bg-white\/5,
+.glass-card .bg-white\/10,
+.otakufy-glass .bg-white\/5,
+.otakufy-glass .bg-white\/10,
+.widget-glass .bg-white\/5,
+.widget-glass .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+.dark .glass-card .bg-white\/5,
+.dark .glass-card .bg-white\/10,
+.dark .otakufy-glass .bg-white\/5,
+.dark .otakufy-glass .bg-white\/10,
+.dark .widget-glass .bg-white\/5,
+.dark .widget-glass .bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Hover states */
+.glass-card .hover\:bg-white\/10:hover,
+.otakufy-glass .hover\:bg-white\/10:hover,
+.widget-glass .hover\:bg-white\/10:hover {
+  background-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+.dark .glass-card .hover\:bg-white\/10:hover,
+.dark .otakufy-glass .hover\:bg-white\/10:hover,
+.dark .widget-glass .hover\:bg-white\/10:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.glass-card .hover\:text-white:hover,
+.otakufy-glass .hover\:text-white:hover,
+.widget-glass .hover\:text-white:hover {
+  color: #1f2937 !important;
+}
+
+.dark .glass-card .hover\:text-white:hover,
+.dark .otakufy-glass .hover\:text-white:hover,
+.dark .widget-glass .hover\:text-white:hover {
+  color: #ffffff !important;
+}
+
+/* Dividers in glass elements */
+.glass-card .divide-white\/5 > * + *,
+.otakufy-glass .divide-white\/5 > * + *,
+.widget-glass .divide-white\/5 > * + * {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.dark .glass-card .divide-white\/5 > * + *,
+.dark .otakufy-glass .divide-white\/5 > * + *,
+.dark .widget-glass .divide-white\/5 > * + * {
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Circle/ring elements in light mode */
+.glass-card .text-white\/10,
+.otakufy-glass .text-white\/10,
+.widget-glass .text-white\/10 {
+  color: rgba(0, 0, 0, 0.1) !important;
+}
+
+.dark .glass-card .text-white\/10,
+.dark .otakufy-glass .text-white\/10,
+.dark .widget-glass .text-white\/10 {
+  color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ============================================
+   LOFI MODE STYLES - Cozy study atmosphere
+   ============================================ */
+
+/* Lofi glass elements - warm translucent */
+.lofi .glass-card {
+  background: rgba(45, 35, 28, 0.82);
+  border: 1px solid rgba(232, 184, 109, 0.18);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.lofi .otakufy-glass {
+  background: rgba(30, 24, 20, 0.78);
+  border: 1px solid rgba(232, 184, 109, 0.12);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.lofi .widget-glass {
+  background: rgba(45, 35, 28, 0.85);
+  border: 1px solid rgba(232, 184, 109, 0.15);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.lofi .dock-glass {
+  background: rgba(26, 22, 18, 0.9);
+  border-right: 1px solid rgba(232, 184, 109, 0.1);
+}
+
+.lofi .navbar-transparent {
+  background: rgba(26, 22, 18, 0.8);
+  border-bottom: 1px solid rgba(232, 184, 109, 0.08);
+}
+
+/* Lofi text colors in glass elements */
+.lofi .glass-card,
+.lofi .otakufy-glass,
+.lofi .widget-glass {
+  color: #f5f0e8;
+}
+
+.lofi .glass-card .text-white,
+.lofi .otakufy-glass .text-white,
+.lofi .widget-glass .text-white {
+  color: #f5f0e8 !important;
+}
+
+/* Lofi text-white/30 -> warmer muted */
+.lofi .glass-card .text-white\/30,
+.lofi .otakufy-glass .text-white\/30,
+.lofi .widget-glass .text-white\/30 {
+  color: rgba(196, 184, 168, 0.7) !important;
+}
+
+/* Lofi text-white/40 */
+.lofi .glass-card .text-white\/40,
+.lofi .otakufy-glass .text-white\/40,
+.lofi .widget-glass .text-white\/40 {
+  color: rgba(196, 184, 168, 0.78) !important;
+}
+
+/* Lofi text-white/50 */
+.lofi .glass-card .text-white\/50,
+.lofi .otakufy-glass .text-white\/50,
+.lofi .widget-glass .text-white\/50 {
+  color: rgba(196, 184, 168, 0.85) !important;
+}
+
+/* Lofi text-white/60 */
+.lofi .glass-card .text-white\/60,
+.lofi .otakufy-glass .text-white\/60,
+.lofi .widget-glass .text-white\/60 {
+  color: rgba(196, 184, 168, 0.9) !important;
+}
+
+/* Lofi text-white/70 */
+.lofi .glass-card .text-white\/70,
+.lofi .otakufy-glass .text-white\/70,
+.lofi .widget-glass .text-white\/70 {
+  color: rgba(245, 240, 232, 0.92) !important;
+}
+
+.lofi .glass-card .border-white\/10,
+.lofi .glass-card .border-white\/20,
+.lofi .otakufy-glass .border-white\/10,
+.lofi .otakufy-glass .border-white\/20,
+.lofi .widget-glass .border-white\/10,
+.lofi .widget-glass .border-white\/20 {
+  border-color: rgba(232, 184, 109, 0.12) !important;
+}
+
+.lofi .glass-card .bg-white\/5,
+.lofi .glass-card .bg-white\/10,
+.lofi .otakufy-glass .bg-white\/5,
+.lofi .otakufy-glass .bg-white\/10,
+.lofi .widget-glass .bg-white\/5,
+.lofi .widget-glass .bg-white\/10 {
+  background-color: rgba(232, 184, 109, 0.08) !important;
+}
+
+.lofi .glass-card .hover\:bg-white\/10:hover,
+.lofi .otakufy-glass .hover\:bg-white\/10:hover,
+.lofi .widget-glass .hover\:bg-white\/10:hover {
+  background-color: rgba(232, 184, 109, 0.15) !important;
+}
+
+.lofi .glass-card .hover\:text-white:hover,
+.lofi .otakufy-glass .hover\:text-white:hover,
+.lofi .widget-glass .hover\:text-white:hover {
+  color: #f5f0e8 !important;
+}
+
+.lofi .glass-card .divide-white\/5 > * + *,
+.lofi .otakufy-glass .divide-white\/5 > * + *,
+.lofi .widget-glass .divide-white\/5 > * + * {
+  border-color: rgba(232, 184, 109, 0.08);
+}
+
+.lofi .glass-card .text-white\/10,
+.lofi .otakufy-glass .text-white\/10,
+.lofi .widget-glass .text-white\/10 {
+  color: rgba(232, 184, 109, 0.15) !important;
+}
+
+/* Lofi dock button styling */
+.lofi .dock-button {
+  color: rgba(245, 240, 232, 0.6);
+}
+
+.lofi .dock-button:hover {
+  background: rgba(232, 184, 109, 0.15);
+  color: #f5f0e8;
+}
+
+.lofi .dock-button.active {
+  background: rgba(232, 184, 109, 0.25);
+  color: #e8b86d;
+  box-shadow: 0 0 20px rgba(232, 184, 109, 0.3);
+}
+
+/* Lofi primary glow */
+.lofi .primary-glow {
+  box-shadow: 0 0 20px rgba(232, 184, 109, 0.3);
+}
+
+/* Lofi gradient text */
+.lofi .gradient-text {
+  background: linear-gradient(135deg, #e8b86d 0%, #d4956a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

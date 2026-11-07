@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Cool female - Trendy short hair, confident -->
+  <defs>
+    <linearGradient id="hair8" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ec4899"/>
+      <stop offset="100%" style="stop-color:#f472b6"/>
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="#06b6d4"/>
+
+  <!-- Face -->
+  <ellipse cx="50" cy="46" rx="21" ry="22" fill="#fcd9b8"/>
+
+  <!-- Short trendy hair - asymmetric pixie cut -->
+  <path d="M28 42 Q30 18 50 16 Q72 18 74 42 Q70 28 50 26 Q32 28 28 42" fill="url(#hair8)"/>
+  <!-- Asymmetric side sweep -->
+  <path d="M26 40 Q24 30 32 24 Q44 20 50 28 L45 40 Q38 35 26 40" fill="url(#hair8)"/>
+  <!-- Short side -->
+  <path d="M72 42 Q74 35 70 32 L65 38" fill="url(#hair8)"/>
+  <!-- Hair texture -->
+  <path d="M30 32 Q38 26 48 30" stroke="#db2777" stroke-width="2" fill="none"/>
+  <path d="M34 36 Q40 32 46 36" stroke="#db2777" stroke-width="1.5" fill="none"/>
+
+  <!-- Eyebrows - confident -->
+  <path d="M35 38 Q40 36 45 38" stroke="#4a3728" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M55 38 Q60 36 65 38" stroke="#4a3728" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- Eyes - expressive -->
+  <ellipse cx="40" cy="44" rx="4.5" ry="5" fill="#1f2937"/>
+  <ellipse cx="60" cy="44" rx="4.5" ry="5" fill="#1f2937"/>
+  <circle cx="41.5" cy="43" r="1.8" fill="white"/>
+  <circle cx="61.5" cy="43" r="1.8" fill="white"/>
+  <!-- Eyeliner wing -->
+  <path d="M34 44 L32 42" stroke="#1f2937" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M66 44 L68 42" stroke="#1f2937" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Subtle blush -->
+  <ellipse cx="32" cy="50" rx="4" ry="2" fill="#fda4af" opacity="0.4"/>
+  <ellipse cx="68" cy="50" rx="4" ry="2" fill="#fda4af" opacity="0.4"/>
+
+  <!-- Small nose -->
+  <path d="M50 48 Q52 52 50 54" stroke="#e8c4a8" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Confident smile -->
+  <path d="M43 58 Q50 63 57 58" stroke="#c56c6c" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Small ear stud -->
+  <circle cx="26" cy="46" r="2" fill="#fcd34d"/>
+
+  <!-- Trendy jacket -->
+  <path d="M22 80 Q22 64 38 62 L50 66 L62 62 Q78 64 78 80 L78 100 L22 100 Z" fill="#0891b2"/>
+  <!-- Jacket collar/lapels -->
+  <path d="M38 62 L44 72 L50 66 L56 72 L62 62" fill="#0e7490"/>
+  <!-- Zipper line -->
+  <line x1="50" y1="66" x2="50" y2="85" stroke="#164e63" stroke-width="2"/>
+</svg>

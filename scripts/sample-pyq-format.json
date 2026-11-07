@@ -1,0 +1,62 @@
+[
+  {
+    "question": "Which of the following is the highest peak in Sikkim?",
+    "options": [
+      { "id": "a", "text": "Kangchenjunga" },
+      { "id": "b", "text": "Nanda Devi" },
+      { "id": "c", "text": "K2" },
+      { "id": "d", "text": "Makalu" }
+    ],
+    "correct_option_id": "a",
+    "explanation": "Kangchenjunga (8,586m) is the highest peak in Sikkim and the third highest mountain in the world.",
+    "subject": "Geography",
+    "topics": ["Sikkim Geography", "Mountains"],
+    "subtopic": "Major Peaks",
+    "exam_name": "SPSC",
+    "exam_year": 2023,
+    "exam_stage": "Prelims",
+    "difficulty": "easy",
+    "question_type": "factual",
+    "cognitive_level": "remember"
+  },
+  {
+    "question": "The Treaty of Titalia (1817) was signed between the British East India Company and which kingdom?",
+    "options": [
+      { "id": "a", "text": "Kingdom of Nepal" },
+      { "id": "b", "text": "Kingdom of Bhutan" },
+      { "id": "c", "text": "Kingdom of Sikkim" },
+      { "id": "d", "text": "Kingdom of Cooch Behar" }
+    ],
+    "correct_option_id": "c",
+    "explanation": "The Treaty of Titalia was signed on 10 February 1817 between the British East India Company and the Chogyal of Sikkim. It restored the territory between the Mechi and Teesta rivers to Sikkim, which had been annexed by Nepal.",
+    "subject": "History",
+    "topics": ["Sikkim History", "British India", "Treaties"],
+    "subtopic": "Colonial Period Treaties",
+    "exam_name": "SPSC",
+    "exam_year": 2023,
+    "exam_stage": "Prelims",
+    "difficulty": "medium",
+    "question_type": "factual",
+    "cognitive_level": "remember"
+  },
+  {
+    "question": "Consider the following statements about the Panchayati Raj system in Sikkim:\n1. Sikkim adopted the 73rd Constitutional Amendment Act in 1993.\n2. The Sikkim Panchayat Act was enacted in 1993.\n3. There are three tiers of Panchayati Raj in Sikkim.\n\nWhich of the statements given above is/are correct?",
+    "options": [
+      { "id": "a", "text": "1 and 2 only" },
+      { "id": "b", "text": "2 and 3 only" },
+      { "id": "c", "text": "1 and 3 only" },
+      { "id": "d", "text": "1, 2 and 3" }
+    ],
+    "correct_option_id": "b",
+    "explanation": "Sikkim adopted the Panchayati Raj system through the Sikkim Panchayat Act, 1993. It has three tiers: Gram Panchayat, Zilla Panchayat, and Block Administrative Centre. However, the 73rd Amendment was passed in 1992, not 1993, and Sikkim's adoption followed the state's own legislative process.",
+    "subject": "Indian Polity",
+    "topics": ["Panchayati Raj", "Sikkim Governance", "Local Government"],
+    "subtopic": "Panchayati Raj in Sikkim",
+    "exam_name": "SPSC",
+    "exam_year": 2022,
+    "exam_stage": "Prelims",
+    "difficulty": "hard",
+    "question_type": "statement_based",
+    "cognitive_level": "analyze"
+  }
+]

@@ -1,0 +1,1748 @@
+// Supabase Edge Function: Internal Mock Test Generator
+// Generates mock tests from PYQ database and inserts into tests + questions tables
+// Auth: JWT (logged-in user), NOT API key
+// Deploy: npx supabase functions deploy mock-test --project-ref <your-project-ref>
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.21.0";
+import {
+  normalizeGeneratedQuestions,
+  rebalanceCorrectAnswerDistribution,
+} from "../../../src/lib/spsc/mock-test-hybrid.ts";
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const EMBEDDING_MODEL = "gemini-embedding-001";
+const EMBEDDING_DIMENSIONS = 768;
+const HARDCODED_EXAM_NAMES = ["SPSC"];
+const QUESTION_GEN_MODEL = Deno.env.get("GEMINI_BASIC_MODEL") ?? "gemini-3.1-flash-lite"; // cheap default (see src/lib/ai-models.ts)
+
+// ---------------------------------------------------------------------------
+// Exam paper patterns (same as pyq-api)
+// ---------------------------------------------------------------------------
+
+interface PaperSection {
+  subject: string;
+  query: string;
+  count: number;
+}
+
+interface ExamPattern {
+  name: string;
+  description: string;
+  total_questions: number;
+  duration_minutes: number;
+  negative_marking: boolean;
+  negative_mark_value: number;
+  marks_per_question: number;
+  sections: PaperSection[];
+}
+
+const EXAM_PATTERNS: Record<string, ExamPattern> = {
+  "undersecretary-prelims": {
+    name: "Under Secretary Preliminary Examination",
+    description:
+      "SPSC Under Secretary Prelims — General Studies paper covering polity, history, geography, science, current affairs, and Sikkim-specific topics.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Indian Polity", query: "constitution governance fundamental rights directive principles", count: 15 },
+      { subject: "History", query: "Indian history freedom movement ancient medieval modern Sikkim", count: 15 },
+      { subject: "Geography", query: "Indian geography rivers mountains climate Sikkim", count: 12 },
+      { subject: "General Knowledge", query: "current affairs India Sikkim government schemes awards", count: 20 },
+      { subject: "Science", query: "general science physics chemistry biology", count: 12 },
+      { subject: "Indian Economy", query: "Indian economy planning budget GDP fiscal policy", count: 8 },
+      { subject: "Environment", query: "environment ecology biodiversity conservation Sikkim", count: 8 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 10 },
+    ],
+  },
+  "si-police-prelims": {
+    name: "Sub Inspector of Police Preliminary Examination",
+    description:
+      "SPSC SI Police Prelims — General Studies + basic aptitude covering polity, law, current affairs, and reasoning.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Indian Polity", query: "constitution law criminal procedure IPC evidence act", count: 20 },
+      { subject: "General Knowledge", query: "current affairs India Sikkim police administration", count: 25 },
+      { subject: "History", query: "Indian history Sikkim history freedom movement", count: 15 },
+      { subject: "Geography", query: "Indian geography Sikkim geography physical features", count: 10 },
+      { subject: "Science", query: "general science forensic science technology", count: 10 },
+      { subject: "Arithmetic and Logical Reasoning", query: "arithmetic reasoning logic number series", count: 10 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 10 },
+    ],
+  },
+  "general-prelims": {
+    name: "General Preliminary Examination",
+    description:
+      "SPSC General Prelims — broad general studies paper for various SPSC posts.",
+    total_questions: 80,
+    duration_minutes: 90,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Indian Polity", query: "constitution governance rights duties", count: 12 },
+      { subject: "History", query: "Indian history Sikkim history culture", count: 12 },
+      { subject: "Geography", query: "geography India Sikkim rivers mountains", count: 10 },
+      { subject: "General Knowledge", query: "current affairs general awareness", count: 16 },
+      { subject: "Science", query: "general science physics chemistry biology", count: 10 },
+      { subject: "Indian Economy", query: "economy planning budget financial institutions", count: 8 },
+      { subject: "General English", query: "English grammar comprehension vocabulary", count: 12 },
+    ],
+  },
+  "spsc-mains-gs1": {
+    name: "SPSC Mains General Studies Paper 1",
+    description:
+      "SPSC Mains GS Paper 1 — Indian Polity, History, Geography, and Sikkim-specific topics.",
+    total_questions: 150,
+    duration_minutes: 180,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Indian Polity", query: "constitution governance panchayati raj public policy fundamental rights directive principles", count: 35 },
+      { subject: "History", query: "Indian history world history Sikkim history art and culture ancient medieval modern freedom movement", count: 30 },
+      { subject: "Geography", query: "Indian geography world geography Sikkim geography climate change physical features rivers mountains", count: 30 },
+      { subject: "General Knowledge", query: "current affairs awards international organizations United Nations summits", count: 25 },
+      { subject: "Environment", query: "ecology biodiversity environmental law climate change conservation wildlife Sikkim", count: 15 },
+      { subject: "Indian Economy", query: "economic development five year planning financial institutions RBI banking fiscal monetary policy", count: 15 },
+    ],
+  },
+  "spsc-mains-gs2": {
+    name: "SPSC Mains General Studies Paper 2",
+    description:
+      "SPSC Mains GS Paper 2 — Science, Technology, Economy, and Quantitative Aptitude.",
+    total_questions: 150,
+    duration_minutes: 180,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "physics chemistry biology applied science technology inventions discoveries", count: 35 },
+      { subject: "Indian Economy", query: "macroeconomics fiscal policy banking trade GDP budget monetary policy inflation", count: 30 },
+      { subject: "General Knowledge", query: "science and technology current affairs space ISRO defense developments digital India", count: 25 },
+      { subject: "Environment", query: "environmental science pollution conservation sustainable development waste management climate", count: 20 },
+      { subject: "Arithmetic and Logical Reasoning", query: "quantitative aptitude data interpretation number series reasoning logical ability", count: 25 },
+      { subject: "General English", query: "English grammar reading comprehension vocabulary synonyms antonyms sentence correction", count: 15 },
+    ],
+  },
+  "junior-engineer-prelims": {
+    name: "Junior Engineer Preliminary Examination",
+    description:
+      "SPSC Junior Engineer Prelims — General Studies component for engineering posts.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "physics chemistry engineering basics mechanics thermodynamics electronics", count: 25 },
+      { subject: "Indian Polity", query: "constitution governance fundamental rights duties amendments", count: 15 },
+      { subject: "General Knowledge", query: "current affairs general awareness India Sikkim government schemes", count: 20 },
+      { subject: "Geography", query: "Indian geography Sikkim geography rivers mountains natural resources", count: 10 },
+      { subject: "Indian Economy", query: "economy basics economic development infrastructure planning budget", count: 10 },
+      { subject: "General English", query: "English grammar vocabulary sentence formation comprehension", count: 10 },
+      { subject: "Arithmetic and Logical Reasoning", query: "mathematics arithmetic reasoning number series data interpretation", count: 10 },
+    ],
+  },
+  "forest-ranger-prelims": {
+    name: "Forest Ranger Preliminary Examination",
+    description:
+      "SPSC Forest Ranger Prelims — Environment-heavy general studies paper.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Environment", query: "ecology biodiversity forestry wildlife national parks sanctuaries conservation forest management", count: 25 },
+      { subject: "Science", query: "biology botany zoology plant science animal science taxonomy genetics", count: 20 },
+      { subject: "General Knowledge", query: "current affairs environmental schemes government policies wildlife protection act", count: 15 },
+      { subject: "Geography", query: "physical geography Sikkim geography rivers mountains soil types rainfall climate zones", count: 15 },
+      { subject: "Indian Polity", query: "environmental law constitutional provisions forest rights act wildlife protection", count: 10 },
+      { subject: "History", query: "Sikkim history forest history environmental movements chipko movement", count: 5 },
+      { subject: "General English", query: "English grammar vocabulary reading comprehension sentence correction", count: 10 },
+    ],
+  },
+  "quick-practice-30": {
+    name: "Quick 30-Question Practice Test",
+    description:
+      "Quick 30-question practice test — broad general studies for a quick revision session.",
+    total_questions: 30,
+    duration_minutes: 30,
+    negative_marking: false,
+    negative_mark_value: 0,
+    marks_per_question: 1,
+    sections: [
+      { subject: "General Knowledge", query: "current affairs general awareness India Sikkim recent events", count: 8 },
+      { subject: "Indian Polity", query: "constitution basics fundamental rights governance parliament", count: 5 },
+      { subject: "History", query: "Indian history Sikkim history important dates events", count: 5 },
+      { subject: "Geography", query: "basic geography India rivers mountains states capitals", count: 4 },
+      { subject: "Science", query: "general science everyday science physics chemistry biology", count: 4 },
+      { subject: "General English", query: "English grammar vocabulary common usage idioms", count: 4 },
+    ],
+  },
+
+  // =============== COMBINED RECRUITMENT / CIVIL SERVICES ===============
+
+  "combined-mains-gs3": {
+    name: "Combined Mains General Studies Paper 3",
+    description: "SPSC Combined Mains GS Paper 3 — Economy, Science & Technology, Environment, and Ethics.",
+    total_questions: 150,
+    duration_minutes: 180,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Indian Economy", query: "economic development planning fiscal monetary policy trade GDP budget infrastructure", count: 30 },
+      { subject: "Science", query: "science technology inventions discoveries space ISRO biotechnology IT digital", count: 30 },
+      { subject: "Environment", query: "ecology biodiversity conservation climate change pollution sustainable development", count: 25 },
+      { subject: "Indian Polity", query: "governance ethics public administration integrity accountability transparency", count: 25 },
+      { subject: "General Knowledge", query: "current affairs international relations bilateral India foreign policy", count: 20 },
+      { subject: "Arithmetic and Logical Reasoning", query: "data interpretation statistics reasoning logical analysis", count: 20 },
+    ],
+  },
+  "combined-mains-english": {
+    name: "Combined Mains English Paper",
+    description: "SPSC Combined Mains Paper I — English language, comprehension, grammar, and essay writing.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "General English", query: "English grammar sentence correction error spotting articles prepositions tenses", count: 30 },
+      { subject: "General English", query: "reading comprehension passage understanding inference vocabulary context", count: 25 },
+      { subject: "General English", query: "vocabulary synonyms antonyms idioms phrases one word substitution", count: 20 },
+      { subject: "General English", query: "English essay precis letter writing paragraph formal informal", count: 15 },
+      { subject: "General English", query: "fill in the blanks cloze test sentence completion rearrangement", count: 10 },
+    ],
+  },
+  "sscs-prelims": {
+    name: "Sikkim State Civil Service Preliminary Examination",
+    description: "SPSC SSCS Prelims — Comprehensive general studies for Sikkim civil services.",
+    total_questions: 200,
+    duration_minutes: 180,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "General Knowledge", query: "current affairs India Sikkim international events government schemes awards", count: 35 },
+      { subject: "Indian Polity", query: "constitution governance fundamental rights Parliament judiciary local government", count: 30 },
+      { subject: "History", query: "Indian history ancient medieval modern Sikkim history world history freedom movement", count: 25 },
+      { subject: "Geography", query: "Indian geography world geography Sikkim geography rivers mountains climate", count: 25 },
+      { subject: "General English", query: "English grammar comprehension vocabulary sentence correction", count: 25 },
+      { subject: "Science", query: "general science physics chemistry biology technology inventions", count: 20 },
+      { subject: "Indian Economy", query: "Indian economy planning budget GDP fiscal monetary policy banking", count: 20 },
+      { subject: "Environment", query: "ecology biodiversity environment conservation Sikkim", count: 10 },
+      { subject: "Arithmetic and Logical Reasoning", query: "aptitude reasoning data interpretation number series", count: 10 },
+    ],
+  },
+
+  // =============== POLICE / LAW ENFORCEMENT ===============
+
+  "si-police-mains": {
+    name: "Sub Inspector Police Mains Examination",
+    description: "SPSC SI Police Mains — English + 2 General Studies papers covering law, polity, and current affairs.",
+    total_questions: 150,
+    duration_minutes: 180,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Indian Polity", query: "constitution criminal law IPC CrPC evidence act police administration law enforcement", count: 30 },
+      { subject: "General Knowledge", query: "current affairs India Sikkim national international events awards", count: 25 },
+      { subject: "General English", query: "English grammar comprehension vocabulary essay writing", count: 25 },
+      { subject: "History", query: "Indian history modern India freedom movement Sikkim history world history", count: 20 },
+      { subject: "Geography", query: "Indian geography Sikkim geography physical features climate rivers", count: 15 },
+      { subject: "Science", query: "forensic science general science technology cyber crime investigation", count: 15 },
+      { subject: "Indian Economy", query: "economy development planning government schemes welfare programs", count: 10 },
+      { subject: "Arithmetic and Logical Reasoning", query: "reasoning aptitude mental ability logical deduction", count: 10 },
+    ],
+  },
+  "si-excise": {
+    name: "Sub Inspector Excise Examination",
+    description: "SPSC SI Excise — English, GK, Science, Mathematics, and Social Science.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "General English", query: "English grammar vocabulary comprehension sentence correction", count: 20 },
+      { subject: "General Knowledge", query: "current affairs general awareness India Sikkim", count: 20 },
+      { subject: "Science", query: "physics chemistry biology general science", count: 20 },
+      { subject: "Arithmetic and Logical Reasoning", query: "mathematics arithmetic algebra geometry mensuration", count: 20 },
+      { subject: "History", query: "Indian history Sikkim history social science civics", count: 10 },
+      { subject: "Geography", query: "Indian geography Sikkim geography social studies", count: 10 },
+    ],
+  },
+  "sub-jailer": {
+    name: "Sub Jailer Examination",
+    description: "SPSC Sub Jailer — General studies covering GK, polity, history, and social sciences.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "General Knowledge", query: "current affairs general awareness India Sikkim prison administration", count: 25 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 20 },
+      { subject: "Indian Polity", query: "constitution governance criminal justice system prison law", count: 15 },
+      { subject: "History", query: "Indian history Sikkim history world history social reform movements", count: 15 },
+      { subject: "Geography", query: "Indian geography Sikkim geography physical features", count: 10 },
+      { subject: "Science", query: "general science biology psychology basic science", count: 10 },
+      { subject: "Arithmetic and Logical Reasoning", query: "arithmetic reasoning mental ability logical deduction", count: 5 },
+    ],
+  },
+
+  // =============== FIRE SERVICE ===============
+
+  "sub-fire-officer": {
+    name: "Sub Fire Officer Examination",
+    description: "SPSC Sub Fire Officer — Science-heavy exam covering GK, Mathematics, Physics, Chemistry, Biology, and English.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "physics mechanics thermodynamics heat transfer fire science combustion", count: 25 },
+      { subject: "Arithmetic and Logical Reasoning", query: "mathematics arithmetic geometry mensuration trigonometry", count: 20 },
+      { subject: "Science", query: "chemistry chemical reactions fire extinguishing agents elements compounds", count: 15 },
+      { subject: "General Knowledge", query: "current affairs fire safety disaster management emergency services", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Science", query: "biology human anatomy first aid emergency response physiology", count: 10 },
+    ],
+  },
+
+  // =============== ENGINEERING ===============
+
+  "assistant-engineer-civil": {
+    name: "Assistant Engineer (Civil) Examination",
+    description: "SPSC AE Civil — General English & GK + Civil Engineering fundamentals.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "civil engineering structures construction materials concrete steel strength RCC", count: 25 },
+      { subject: "General Knowledge", query: "current affairs India Sikkim infrastructure development government schemes", count: 20 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Arithmetic and Logical Reasoning", query: "engineering mathematics calculus mechanics structural analysis", count: 15 },
+      { subject: "Geography", query: "surveying geotechnical soil mechanics geology terrain mapping", count: 10 },
+      { subject: "Environment", query: "environmental engineering water supply sanitation waste management pollution", count: 10 },
+      { subject: "Indian Polity", query: "building codes regulations construction law public works", count: 5 },
+    ],
+  },
+  "assistant-engineer-electrical": {
+    name: "Assistant Engineer (Electrical) Examination",
+    description: "SPSC AE Electrical — General English & GK + Electrical Engineering fundamentals.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "electrical engineering circuits power systems transformers motors generators", count: 30 },
+      { subject: "General Knowledge", query: "current affairs India Sikkim power sector energy infrastructure", count: 20 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Arithmetic and Logical Reasoning", query: "engineering mathematics electrical circuits analysis network theory", count: 15 },
+      { subject: "Science", query: "electronics digital systems control systems instrumentation", count: 10 },
+      { subject: "Indian Economy", query: "power sector policy energy economy electricity infrastructure", count: 5 },
+      { subject: "Indian Polity", query: "electricity act regulations power sector governance", count: 5 },
+    ],
+  },
+  "assistant-engineer-mechanical": {
+    name: "Assistant Engineer (Mechanical) Examination",
+    description: "SPSC AE Mechanical — General English & GK + Mechanical Engineering fundamentals.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "mechanical engineering thermodynamics fluid mechanics manufacturing machines", count: 30 },
+      { subject: "General Knowledge", query: "current affairs India Sikkim industrial development manufacturing", count: 20 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Arithmetic and Logical Reasoning", query: "engineering mathematics mechanics dynamics kinematics", count: 15 },
+      { subject: "Science", query: "material science metallurgy heat treatment production technology", count: 10 },
+      { subject: "Indian Economy", query: "industrial policy manufacturing sector economy development", count: 5 },
+      { subject: "Indian Polity", query: "industrial regulations safety standards factory act", count: 5 },
+    ],
+  },
+  "assistant-engineer-agriculture": {
+    name: "Assistant Engineer (Agriculture) Examination",
+    description: "SPSC AE Agriculture — General English & GK + Agricultural engineering and sciences.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "agriculture engineering irrigation farm machinery soil conservation crop science", count: 25 },
+      { subject: "General Knowledge", query: "current affairs agriculture schemes Sikkim organic farming India rural development", count: 20 },
+      { subject: "Environment", query: "agriculture ecology organic farming sustainable agriculture soil science", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Science", query: "botany plant science horticulture crop production seed technology", count: 10 },
+      { subject: "Indian Economy", query: "agricultural economy rural development cooperatives farming", count: 10 },
+      { subject: "Geography", query: "soil types climate agriculture regions irrigation systems", count: 5 },
+    ],
+  },
+
+  // =============== MEDICAL / HEALTH ===============
+
+  "gdmo": {
+    name: "General Duty Medical Officer Examination",
+    description: "SPSC GDMO — General Ability, Preventive & Social Medicine, General Medicine, Pediatrics, Surgery, Gynecology.",
+    total_questions: 150,
+    duration_minutes: 180,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "general medicine internal medicine diagnosis clinical pharmacology therapeutics", count: 30 },
+      { subject: "Science", query: "surgery surgical procedures surgical anatomy operative techniques", count: 25 },
+      { subject: "Science", query: "preventive social community medicine public health epidemiology biostatistics", count: 25 },
+      { subject: "Science", query: "pediatrics child health neonatology growth development immunization", count: 20 },
+      { subject: "Science", query: "gynecology obstetrics maternal health reproductive medicine", count: 20 },
+      { subject: "General Knowledge", query: "health schemes national health policy medical ethics public health programs", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension medical terminology", count: 15 },
+    ],
+  },
+  "veterinary-officer": {
+    name: "Veterinary Officer Examination",
+    description: "SPSC Veterinary Officer — General English & GK + Veterinary Science and Animal Husbandry.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "veterinary science animal husbandry livestock diseases pathology anatomy", count: 30 },
+      { subject: "Science", query: "animal nutrition breeding genetics dairy science poultry farming", count: 20 },
+      { subject: "General Knowledge", query: "current affairs animal husbandry schemes Sikkim livestock India", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Environment", query: "animal ecology wildlife conservation biodiversity zoonotic diseases", count: 10 },
+      { subject: "Indian Economy", query: "dairy industry livestock economy rural development", count: 5 },
+      { subject: "Indian Polity", query: "animal welfare act veterinary regulations food safety", count: 5 },
+    ],
+  },
+  "dental-surgeon": {
+    name: "Dental Surgeon (Junior Grade) Examination",
+    description: "SPSC Dental Surgeon Jr Grade — General English & GK + Dental Sciences.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "dental surgery oral medicine dental anatomy pathology orthodontics", count: 35 },
+      { subject: "Science", query: "general anatomy physiology pharmacology biochemistry microbiology", count: 20 },
+      { subject: "General Knowledge", query: "current affairs health policy dental education India", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Science", query: "preventive dentistry public health community dentistry", count: 10 },
+      { subject: "Indian Polity", query: "medical regulations health policy dental council", count: 5 },
+    ],
+  },
+  "specialist-sr-grade": {
+    name: "Specialist (Senior Grade) Medical Examination",
+    description: "SPSC Specialist Sr Grade — Medical specializations: Anaesthesia, ENT, Surgery, Gynecology, Microbiology, Ophthalmology.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "medical specialization surgery anaesthesia clinical medicine advanced pathology", count: 35 },
+      { subject: "Science", query: "general medicine diagnosis clinical pharmacology evidence-based medicine", count: 20 },
+      { subject: "Science", query: "anatomy physiology biochemistry microbiology immunology", count: 15 },
+      { subject: "General Knowledge", query: "medical ethics health policy national health programs", count: 10 },
+      { subject: "General English", query: "English grammar comprehension medical communication", count: 10 },
+      { subject: "Science", query: "preventive community medicine public health research methodology", count: 10 },
+    ],
+  },
+  "staff-nurse": {
+    name: "Staff Nurse (GNM) Examination",
+    description: "SPSC Staff Nurse GNM — General English & GK + Nursing Sciences.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "nursing medical surgical community health pediatric obstetric nursing", count: 30 },
+      { subject: "Science", query: "anatomy physiology pharmacology microbiology nutrition biochemistry", count: 20 },
+      { subject: "General Knowledge", query: "current affairs health schemes national health mission India Sikkim", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Science", query: "community health nursing public health maternal child health", count: 10 },
+      { subject: "Science", query: "mental health psychiatric nursing psychology first aid", count: 5 },
+      { subject: "Indian Polity", query: "nursing council health regulations professional ethics", count: 5 },
+    ],
+  },
+  "paramedical": {
+    name: "Paramedical Various Posts Examination",
+    description: "SPSC Paramedical — General English & GK + basic medical sciences for various paramedical posts.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "medical science anatomy physiology pathology basic clinical knowledge", count: 25 },
+      { subject: "Science", query: "pharmacology biochemistry microbiology laboratory techniques diagnostics", count: 20 },
+      { subject: "General Knowledge", query: "current affairs health programs India Sikkim medical schemes", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Science", query: "community health hygiene sanitation nutrition public health", count: 10 },
+      { subject: "Environment", query: "environmental health water sanitation waste management infection control", count: 10 },
+      { subject: "Indian Polity", query: "health policy regulations medical council ethics", count: 5 },
+    ],
+  },
+  "health-educator": {
+    name: "Health Educator Examination",
+    description: "SPSC Health Educator — GK-focused exam with health education and public health emphasis.",
+    total_questions: 80,
+    duration_minutes: 90,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "General Knowledge", query: "current affairs health education public health India Sikkim health programs", count: 20 },
+      { subject: "Science", query: "community health hygiene nutrition disease prevention health education", count: 20 },
+      { subject: "Environment", query: "environmental health sanitation water safety waste disposal pollution", count: 10 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 10 },
+      { subject: "Science", query: "anatomy physiology basic medical science first aid", count: 10 },
+      { subject: "Indian Polity", query: "health policy national health mission NRHM regulations", count: 5 },
+      { subject: "Indian Economy", query: "health expenditure government health schemes budgets", count: 5 },
+    ],
+  },
+  "mphw": {
+    name: "Multi Purpose Health Worker (Male/Female) Examination",
+    description: "SPSC MPHW — General English & GK + Community Health Sciences.",
+    total_questions: 80,
+    duration_minutes: 90,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "community health primary healthcare disease prevention immunization maternal child health", count: 25 },
+      { subject: "General Knowledge", query: "current affairs health programs India Sikkim NRHM NHM", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Science", query: "anatomy physiology nutrition hygiene first aid emergency care", count: 10 },
+      { subject: "Environment", query: "environmental health sanitation safe drinking water vector control", count: 10 },
+      { subject: "Indian Polity", query: "health regulations family welfare population policy", count: 5 },
+    ],
+  },
+  "drug-inspector": {
+    name: "Drug Inspector Examination",
+    description: "SPSC Drug Inspector — General English & GK + Pharmaceutical Sciences and Drug Regulation.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "pharmacy pharmacology drug chemistry pharmaceutical analysis formulations", count: 30 },
+      { subject: "Science", query: "pharmacognosy biochemistry microbiology quality control drug testing", count: 20 },
+      { subject: "General Knowledge", query: "current affairs drug regulation India pharmaceutical industry", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Indian Polity", query: "drugs cosmetics act drug regulation CDSCO pharmaceutical law", count: 10 },
+      { subject: "Science", query: "clinical pharmacology toxicology adverse drug reactions drug safety", count: 10 },
+    ],
+  },
+  "food-safety-officer": {
+    name: "Food Safety Officer Examination",
+    description: "SPSC Food Safety Officer — General English & GK + Food Science, Hygiene, and Safety Regulations.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "food science food chemistry nutrition food processing food technology", count: 25 },
+      { subject: "Science", query: "food microbiology hygiene food safety HACCP quality assurance", count: 20 },
+      { subject: "General Knowledge", query: "current affairs food safety India FSSAI regulations standards", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Indian Polity", query: "food safety standards act FSSAI regulations food adulteration law", count: 10 },
+      { subject: "Environment", query: "food contamination pesticides environmental toxicology water quality", count: 10 },
+      { subject: "Science", query: "biochemistry chemistry analytical methods food testing", count: 5 },
+    ],
+  },
+  "pharmacist-ayush": {
+    name: "Pharmacist AYUSH (Ayurveda/Homeopathy) Examination",
+    description: "SPSC Pharmacist AYUSH — General English & GK + Traditional Medicine & Pharmacy.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "ayurveda homeopathy traditional medicine herbal pharmacology medicinal plants", count: 30 },
+      { subject: "Science", query: "pharmacy pharmacognosy drug preparation formulation dispensing", count: 20 },
+      { subject: "General Knowledge", query: "current affairs AYUSH ministry traditional medicine India Sikkim health", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Science", query: "anatomy physiology pathology basic medical science", count: 10 },
+      { subject: "Indian Polity", query: "AYUSH policy drug regulation traditional medicine legislation", count: 5 },
+      { subject: "Environment", query: "medicinal plants biodiversity herbal resources conservation", count: 5 },
+    ],
+  },
+  "yoga-instructor-ayush": {
+    name: "Yoga Instructor (AYUSH) Examination",
+    description: "SPSC Yoga Instructor AYUSH — General English & GK + Yoga, Philosophy, and Wellness Sciences.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "yoga therapy anatomy physiology pranayama asana meditation wellness", count: 30 },
+      { subject: "History", query: "yoga philosophy Indian philosophy Patanjali yoga sutras Ayurveda tradition", count: 20 },
+      { subject: "General Knowledge", query: "current affairs yoga international day India AYUSH ministry health", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Science", query: "human anatomy physiology nutrition health fitness sports science", count: 10 },
+      { subject: "Indian Polity", query: "AYUSH policy health education physical education regulations", count: 5 },
+      { subject: "Environment", query: "naturopathy wellness holistic health mindfulness", count: 5 },
+    ],
+  },
+  "scientific-officer-ayush": {
+    name: "Scientific Officer (AYUSH) Examination",
+    description: "SPSC Scientific Officer AYUSH — Scientific research in traditional medicine systems.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "ayurveda research methodology scientific analysis traditional medicine pharmacology", count: 30 },
+      { subject: "Science", query: "chemistry biochemistry phytochemistry analytical methods drug testing quality control", count: 20 },
+      { subject: "General Knowledge", query: "current affairs AYUSH ministry traditional medicine India research", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension scientific writing", count: 15 },
+      { subject: "Science", query: "pharmacognosy herbal drugs medicinal plants botany", count: 10 },
+      { subject: "Indian Polity", query: "AYUSH regulations drug policy traditional medicine legislation", count: 5 },
+      { subject: "Environment", query: "medicinal plants conservation biodiversity herbal resources", count: 5 },
+    ],
+  },
+  "tutor-clinical-instructor": {
+    name: "Tutor / Clinical Instructor Examination",
+    description: "SPSC Tutor/Clinical Instructor — Nursing Education and Clinical Training.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "nursing education clinical training medical surgical community health obstetric pediatric", count: 30 },
+      { subject: "Science", query: "anatomy physiology pharmacology pathology microbiology", count: 20 },
+      { subject: "Science", query: "teaching methodology clinical education student assessment curriculum development", count: 15 },
+      { subject: "General Knowledge", query: "current affairs health programs nursing education India Sikkim", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 10 },
+      { subject: "Indian Polity", query: "nursing council regulations health education policy", count: 5 },
+      { subject: "Science", query: "mental health community nursing research methodology evidence based practice", count: 5 },
+    ],
+  },
+
+  // =============== ADMINISTRATIVE / CLERICAL ===============
+
+  "ldc-prelims": {
+    name: "Lower Division Clerk (LDC) Examination",
+    description: "SPSC LDC — Popular entry-level exam covering General English, GK, and basic aptitude.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "General English", query: "English grammar vocabulary comprehension sentence correction fill blanks", count: 25 },
+      { subject: "General Knowledge", query: "current affairs general awareness India Sikkim government", count: 25 },
+      { subject: "Arithmetic and Logical Reasoning", query: "arithmetic reasoning mental ability number series percentage", count: 20 },
+      { subject: "Indian Polity", query: "constitution governance fundamental rights duties parliament", count: 10 },
+      { subject: "History", query: "Indian history Sikkim history important events dates", count: 10 },
+      { subject: "Geography", query: "India geography Sikkim geography rivers mountains states capitals", count: 10 },
+    ],
+  },
+  "accounts-clerk": {
+    name: "Accounts Clerk / Junior Store Keeper Examination",
+    description: "SPSC Accounts Clerk — English, GK, Arithmetic, and basic Commerce & Accounting.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Arithmetic and Logical Reasoning", query: "arithmetic accounting calculation percentage profit loss interest", count: 25 },
+      { subject: "General English", query: "English grammar vocabulary comprehension letter writing", count: 20 },
+      { subject: "General Knowledge", query: "current affairs general awareness India Sikkim commerce trade", count: 20 },
+      { subject: "Indian Economy", query: "accounting basics commerce trade business finance banking", count: 15 },
+      { subject: "Indian Polity", query: "governance administration financial management government", count: 10 },
+      { subject: "Science", query: "computer basics office technology digital literacy", count: 10 },
+    ],
+  },
+  "stenographer": {
+    name: "Stenographer Grade III Examination",
+    description: "SPSC Stenographer — English-heavy exam with General English and General Awareness.",
+    total_questions: 80,
+    duration_minutes: 90,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "General English", query: "English grammar vocabulary comprehension sentence correction synonyms antonyms", count: 40 },
+      { subject: "General Knowledge", query: "current affairs general awareness India Sikkim government schemes", count: 25 },
+      { subject: "Indian Polity", query: "constitution governance administration parliament judiciary", count: 5 },
+      { subject: "History", query: "Indian history Sikkim history important events", count: 5 },
+      { subject: "Geography", query: "India geography states capitals Sikkim", count: 5 },
+    ],
+  },
+  "cooperative-inspector": {
+    name: "Cooperative Inspector / Auditor Examination",
+    description: "SPSC Cooperative Inspector — General English & GK + Commerce, Economics, and Cooperation.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Indian Economy", query: "cooperative movement cooperatives banking credit societies economics commerce", count: 25 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 20 },
+      { subject: "General Knowledge", query: "current affairs India Sikkim cooperative sector government schemes", count: 20 },
+      { subject: "Arithmetic and Logical Reasoning", query: "accounting arithmetic profit loss interest percentage calculation", count: 15 },
+      { subject: "Indian Polity", query: "cooperative laws governance administration regulation", count: 10 },
+      { subject: "History", query: "cooperative movement history India Sikkim social reform", count: 5 },
+      { subject: "Geography", query: "India geography Sikkim geography rural development", count: 5 },
+    ],
+  },
+  "statistical-inspector": {
+    name: "Statistical Inspector Examination",
+    description: "SPSC Statistical Inspector — General English & GK + Economics, Mathematics, and Statistics.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Arithmetic and Logical Reasoning", query: "statistics probability data analysis sampling regression statistical methods", count: 25 },
+      { subject: "Indian Economy", query: "economics macroeconomics microeconomics national income GDP economic indicators", count: 20 },
+      { subject: "Arithmetic and Logical Reasoning", query: "mathematics algebra calculus number theory quantitative aptitude", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "General Knowledge", query: "current affairs India economic data census surveys", count: 15 },
+      { subject: "Indian Polity", query: "statistical organizations census bureau planning commission", count: 5 },
+      { subject: "Science", query: "computer applications data processing information technology", count: 5 },
+    ],
+  },
+  "revenue-inspector": {
+    name: "Revenue Inspector Examination",
+    description: "SPSC Revenue Inspector — General English & GK + Land Revenue, Administration, and Law.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Indian Polity", query: "land revenue administration governance property law registration", count: 20 },
+      { subject: "General Knowledge", query: "current affairs India Sikkim government schemes revenue administration", count: 20 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 20 },
+      { subject: "Geography", query: "land survey geography Sikkim geography terrain mapping cadastral", count: 15 },
+      { subject: "Indian Economy", query: "taxation revenue fiscal policy land economics property valuation", count: 10 },
+      { subject: "History", query: "Indian history Sikkim history land reforms agrarian history", count: 10 },
+      { subject: "Arithmetic and Logical Reasoning", query: "arithmetic calculation measurement area revenue computation", count: 5 },
+    ],
+  },
+  "revenue-surveyor": {
+    name: "Revenue Surveyor / Assistant Revenue Surveyor Examination",
+    description: "SPSC Revenue Surveyor — General English & GK + Land Survey, Revenue Administration.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Geography", query: "land survey mapping cadastral survey revenue land records topography", count: 25 },
+      { subject: "Arithmetic and Logical Reasoning", query: "measurement calculation area perimeter trigonometry surveying mathematics", count: 20 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "General Knowledge", query: "current affairs India Sikkim land revenue administration", count: 15 },
+      { subject: "Indian Polity", query: "land laws revenue administration property registration governance", count: 10 },
+      { subject: "Science", query: "surveying instruments GPS GIS technology remote sensing", count: 10 },
+      { subject: "Indian Economy", query: "land economy property valuation revenue collection", count: 5 },
+    ],
+  },
+  "commercial-tax-inspector": {
+    name: "Commercial Tax Inspector Examination",
+    description: "SPSC Commercial Tax Inspector — General English & GK + Commerce, Accountancy, and Mathematics.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Indian Economy", query: "taxation GST commercial tax trade commerce accountancy business", count: 25 },
+      { subject: "Arithmetic and Logical Reasoning", query: "mathematics arithmetic accounting calculation profit loss", count: 20 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "General Knowledge", query: "current affairs India Sikkim tax policy commercial law", count: 15 },
+      { subject: "Indian Polity", query: "tax law GST regulations commercial law governance", count: 15 },
+      { subject: "History", query: "Indian history trade commerce economic history", count: 5 },
+      { subject: "Geography", query: "India geography economic geography trade routes", count: 5 },
+    ],
+  },
+
+  // =============== FORESTRY / ENVIRONMENT / FISHERIES ===============
+
+  "fisheries-officer": {
+    name: "Block Officer (Fisheries) Examination",
+    description: "SPSC Block Officer Fisheries — General English & GK + Fisheries and Aquatic Sciences.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "fisheries aquaculture fish biology ichthyology aquatic ecology fish farming", count: 30 },
+      { subject: "Environment", query: "aquatic ecosystem water quality freshwater marine biodiversity conservation", count: 15 },
+      { subject: "General Knowledge", query: "current affairs fisheries schemes India Sikkim blue revolution", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Science", query: "zoology biology genetics nutrition feed management", count: 10 },
+      { subject: "Indian Economy", query: "fisheries economy aquaculture development rural livelihood", count: 10 },
+      { subject: "Indian Polity", query: "fisheries policy regulations marine law aquaculture act", count: 5 },
+    ],
+  },
+  "assistant-director-fisheries": {
+    name: "Assistant Director (Fisheries) Examination",
+    description: "SPSC AD Fisheries — Advanced Fisheries Science, Aquaculture Management, and Administration.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "fisheries science aquaculture management fish biology limnology marine biology", count: 30 },
+      { subject: "Science", query: "fish genetics breeding hatchery technology fish nutrition disease management", count: 20 },
+      { subject: "General Knowledge", query: "current affairs fisheries policy blue revolution India Sikkim aquaculture", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 10 },
+      { subject: "Environment", query: "aquatic ecosystem conservation water resources biodiversity fisheries management", count: 10 },
+      { subject: "Indian Economy", query: "fisheries economy exports international trade aquaculture industry", count: 10 },
+      { subject: "Indian Polity", query: "fisheries regulations marine policy aquaculture guidelines administration", count: 5 },
+    ],
+  },
+  "livestock-assistant": {
+    name: "Stockman / Livestock Assistant Examination",
+    description: "SPSC Livestock Assistant — General English & GK + Animal Husbandry and Livestock Sciences.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "animal husbandry livestock management cattle dairy poultry sheep goat", count: 30 },
+      { subject: "Science", query: "animal diseases veterinary first aid vaccination deworming breeding", count: 20 },
+      { subject: "General Knowledge", query: "current affairs animal husbandry schemes India Sikkim livestock", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Science", query: "nutrition feed management fodder crops animal genetics", count: 10 },
+      { subject: "Indian Economy", query: "dairy industry livestock economy cooperatives milk production", count: 5 },
+      { subject: "Environment", query: "pasture management grazing land animal ecology", count: 5 },
+    ],
+  },
+
+  // =============== EDUCATION ===============
+
+  "lecturer-diet": {
+    name: "Lecturer DIETs Examination",
+    description: "SPSC Lecturer DIETs — General paper + Education, Psychology, and Teaching Methodology.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "education psychology pedagogy teaching methodology learning theories curriculum", count: 25 },
+      { subject: "General Knowledge", query: "current affairs education policy NEP India Sikkim teaching profession", count: 20 },
+      { subject: "General English", query: "English grammar vocabulary comprehension essay writing", count: 20 },
+      { subject: "Indian Polity", query: "education policy right to education constitutional provisions NEP governance", count: 10 },
+      { subject: "History", query: "history of education Indian education system reform movements", count: 10 },
+      { subject: "Science", query: "child development educational psychology assessment evaluation", count: 10 },
+      { subject: "Geography", query: "social science geography teaching social studies", count: 5 },
+    ],
+  },
+  "iti-instructor": {
+    name: "ITI Instructor Examination",
+    description: "SPSC ITI Instructor — General English & GK + Technical trade knowledge for Industrial Training Institutes.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "engineering workshop technology industrial training mechanics electrical basics", count: 25 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 20 },
+      { subject: "General Knowledge", query: "current affairs skill development India Sikkim ITI vocational training", count: 20 },
+      { subject: "Arithmetic and Logical Reasoning", query: "workshop mathematics calculation measurement technical drawing", count: 15 },
+      { subject: "Science", query: "safety engineering occupational health industrial safety fire safety", count: 10 },
+      { subject: "Indian Polity", query: "skill development policy apprenticeship act vocational education", count: 5 },
+      { subject: "Indian Economy", query: "industrial development skill India manufacturing sector employment", count: 5 },
+    ],
+  },
+  "principal-iti": {
+    name: "Principal ITI Examination",
+    description: "SPSC Principal ITI — General English & GK + Technical Education Administration and Management.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "technical education vocational training industrial management engineering basics", count: 25 },
+      { subject: "General Knowledge", query: "current affairs skill development India Sikkim education policy", count: 20 },
+      { subject: "General English", query: "English grammar vocabulary comprehension administration writing", count: 15 },
+      { subject: "Indian Polity", query: "education policy NEP vocational training governance administration", count: 15 },
+      { subject: "Science", query: "engineering workshop safety industrial technology trades", count: 10 },
+      { subject: "Indian Economy", query: "skill development employment industrial growth manufacturing", count: 10 },
+      { subject: "Arithmetic and Logical Reasoning", query: "management aptitude administrative reasoning data analysis", count: 5 },
+    ],
+  },
+  "assistant-professor-sheda": {
+    name: "Assistant Professor SHEDA Examination",
+    description: "SPSC Assistant Professor SHEDA — Buddhist Studies, Sanskrit, Tibetan Grammar, and Philosophy.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "History", query: "Buddhist philosophy religion history Tibet Sikkim monastery Buddhism dharma", count: 25 },
+      { subject: "History", query: "Sanskrit literature Tibetan grammar ancient texts religious manuscripts", count: 15 },
+      { subject: "History", query: "Nyingma philosophy Buddhist astrology Tibetan culture religious studies", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "General Knowledge", query: "current affairs Sikkim culture religion Buddhism India heritage", count: 15 },
+      { subject: "Indian Polity", query: "cultural policy education religion constitutional provisions minority", count: 5 },
+      { subject: "Geography", query: "Sikkim geography Tibetan plateau Himalayan region cultural geography", count: 5 },
+      { subject: "Environment", query: "sacred landscapes monastery conservation cultural heritage", count: 5 },
+    ],
+  },
+
+  // =============== OTHER SPECIALIZED ===============
+
+  "assistant-town-planner": {
+    name: "Assistant Town Planner Examination",
+    description: "SPSC Assistant Town Planner — General English & GK + Urban Planning and Development.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Geography", query: "urban planning town planning city development land use zoning infrastructure", count: 25 },
+      { subject: "Science", query: "civil engineering architecture building construction structural design", count: 20 },
+      { subject: "General Knowledge", query: "current affairs urban development smart cities Sikkim India", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Environment", query: "environmental planning urban ecology green building sustainable development", count: 10 },
+      { subject: "Indian Polity", query: "urban governance municipal corporation town planning act building regulations", count: 10 },
+      { subject: "Indian Economy", query: "urban economy infrastructure development real estate housing", count: 5 },
+    ],
+  },
+  "assistant-architect": {
+    name: "Assistant Architect Examination",
+    description: "SPSC Assistant Architect — Architecture, Design, Building Construction, and Urban Planning.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "architecture design building construction structural engineering materials", count: 30 },
+      { subject: "Geography", query: "urban planning site planning landscape architecture climatology", count: 15 },
+      { subject: "General Knowledge", query: "current affairs architecture heritage buildings India Sikkim", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 10 },
+      { subject: "Science", query: "building services HVAC plumbing electrical systems", count: 10 },
+      { subject: "Environment", query: "green architecture sustainable design environmental planning", count: 10 },
+      { subject: "History", query: "history of architecture Indian architecture world architecture heritage", count: 5 },
+      { subject: "Indian Polity", query: "building codes regulations town planning act NBC", count: 5 },
+    ],
+  },
+  "assistant-geologist": {
+    name: "Assistant Geologist Examination",
+    description: "SPSC Assistant Geologist — Geology, Earth Sciences, Mineralogy, and Environmental Geology.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "geology earth science mineralogy petrology structural geology stratigraphy", count: 30 },
+      { subject: "Geography", query: "geomorphology physical geography Sikkim geology Himalayan geology terrain", count: 20 },
+      { subject: "Science", query: "hydrogeology groundwater mining mineral resources economic geology", count: 15 },
+      { subject: "General Knowledge", query: "current affairs geological survey India mining Sikkim natural resources", count: 10 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 10 },
+      { subject: "Environment", query: "environmental geology landslides earthquakes natural hazards climate", count: 10 },
+      { subject: "Indian Economy", query: "mining industry mineral resources economic development", count: 5 },
+    ],
+  },
+  "digital-analyst": {
+    name: "Digital Project Analyst / Software Developer Examination",
+    description: "SPSC Digital Project Analyst & Software Developer — General English & GK + IT and Computer Science.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "computer science programming software development databases algorithms data structures", count: 30 },
+      { subject: "Science", query: "IT networking cybersecurity cloud computing digital technology web development", count: 20 },
+      { subject: "General Knowledge", query: "current affairs digital India IT sector technology e-governance", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Arithmetic and Logical Reasoning", query: "logic reasoning programming aptitude data analysis", count: 10 },
+      { subject: "Indian Polity", query: "IT act cyber law digital governance e-governance policy", count: 5 },
+      { subject: "Indian Economy", query: "digital economy IT industry startup ecosystem", count: 5 },
+    ],
+  },
+  "assistant-programmer": {
+    name: "Assistant Programmer Examination",
+    description: "SPSC Assistant Programmer — General English & GK + Programming, Computer Science, and IT.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "programming languages C Java Python software development coding algorithms", count: 30 },
+      { subject: "Science", query: "database SQL networking operating systems computer fundamentals", count: 20 },
+      { subject: "General Knowledge", query: "current affairs IT technology digital India e-governance", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Arithmetic and Logical Reasoning", query: "logical reasoning data structures aptitude programming logic", count: 10 },
+      { subject: "Indian Polity", query: "IT regulations cyber law data protection digital governance", count: 5 },
+      { subject: "Indian Economy", query: "IT industry digital economy software technology", count: 5 },
+    ],
+  },
+  "assistant-director-it": {
+    name: "Assistant Director (IT) Examination",
+    description: "SPSC AD IT — Advanced Computer Science and IT Administration.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "computer science networking systems administration database management software engineering", count: 30 },
+      { subject: "Science", query: "cybersecurity cloud computing IT infrastructure project management SDLC", count: 20 },
+      { subject: "General Knowledge", query: "current affairs IT sector digital India e-governance technology", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension technical writing", count: 10 },
+      { subject: "Arithmetic and Logical Reasoning", query: "data structures algorithms programming logic aptitude", count: 10 },
+      { subject: "Indian Polity", query: "IT act cybersecurity policy digital governance e-governance framework", count: 10 },
+      { subject: "Indian Economy", query: "digital economy IT industry software exports startup", count: 5 },
+    ],
+  },
+  "lab-assistant": {
+    name: "Laboratory Assistant Examination",
+    description: "SPSC Lab Assistant — General English & GK + General Science and Mathematics.",
+    total_questions: 80,
+    duration_minutes: 90,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "general science chemistry biology laboratory techniques experiments", count: 25 },
+      { subject: "Arithmetic and Logical Reasoning", query: "mathematics arithmetic algebra geometry calculation", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "General Knowledge", query: "current affairs general awareness India Sikkim", count: 15 },
+      { subject: "Science", query: "physics mechanics optics electricity magnetism", count: 10 },
+    ],
+  },
+  "field-assistant": {
+    name: "Field Assistant Examination",
+    description: "SPSC Field Assistant — General English & GK + Mathematics, Economics, and Statistics.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Arithmetic and Logical Reasoning", query: "mathematics statistics probability data analysis arithmetic", count: 25 },
+      { subject: "Indian Economy", query: "economics economic development statistics data collection analysis", count: 20 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "General Knowledge", query: "current affairs India Sikkim economic data surveys census", count: 15 },
+      { subject: "Indian Polity", query: "governance administration planning statistics bureau", count: 10 },
+      { subject: "Geography", query: "field survey geography data collection mapping", count: 10 },
+      { subject: "Science", query: "computer basics data entry information technology", count: 5 },
+    ],
+  },
+  "ado-wdo-hdo": {
+    name: "ADO/WDO/HDO (Agriculture/Women/Horticulture Development Officer) Examination",
+    description: "SPSC ADO/WDO/HDO — GK + Development Administration, Agriculture, and Social Welfare.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "agriculture horticulture crop science rural development women empowerment", count: 20 },
+      { subject: "General Knowledge", query: "current affairs India Sikkim development schemes agriculture women welfare", count: 20 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Indian Economy", query: "rural economy agriculture development cooperative movement", count: 15 },
+      { subject: "Indian Polity", query: "panchayati raj rural governance development administration welfare", count: 10 },
+      { subject: "Environment", query: "agriculture ecology soil conservation organic farming horticulture", count: 10 },
+      { subject: "Geography", query: "Sikkim geography agriculture zones climate soil types", count: 5 },
+      { subject: "History", query: "rural development history Sikkim history social reform", count: 5 },
+    ],
+  },
+  "senior-information-assistant": {
+    name: "Senior Information Assistant Examination",
+    description: "SPSC Senior Information Assistant — General English & GK + Media, Communication, and Information Services.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "General English", query: "English grammar vocabulary comprehension essay writing journalism", count: 25 },
+      { subject: "General Knowledge", query: "current affairs India Sikkim media mass communication information technology", count: 25 },
+      { subject: "Indian Polity", query: "press freedom media regulations RTI act information policy governance", count: 15 },
+      { subject: "History", query: "Indian history Sikkim history media history journalism development", count: 10 },
+      { subject: "Science", query: "information technology digital media communication technology", count: 10 },
+      { subject: "Indian Economy", query: "media economy advertising digital media industry", count: 5 },
+      { subject: "Geography", query: "India geography Sikkim geography", count: 5 },
+      { subject: "Arithmetic and Logical Reasoning", query: "reasoning data interpretation general aptitude", count: 5 },
+    ],
+  },
+  "sub-editor": {
+    name: "Assistant Sub-Editor / Sub-Editor Examination",
+    description: "SPSC Sub-Editor — General English & GK + Language proficiency and editorial skills.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "General English", query: "English grammar vocabulary comprehension editing proofreading writing skills", count: 30 },
+      { subject: "General Knowledge", query: "current affairs India Sikkim media journalism publishing", count: 20 },
+      { subject: "Nepali Literature", query: "Nepali language literature grammar writing Sikkim languages", count: 15 },
+      { subject: "Indian Polity", query: "press law media regulation freedom of speech journalism ethics", count: 10 },
+      { subject: "History", query: "Indian history Sikkim history cultural history literature", count: 10 },
+      { subject: "General English", query: "translation precis essay editorial writing news reporting", count: 10 },
+      { subject: "Geography", query: "India geography Sikkim geography general knowledge", count: 5 },
+    ],
+  },
+  "inspector-legal-metrology": {
+    name: "Inspector Legal Metrology Examination",
+    description: "SPSC Inspector Legal Metrology — General English & GK + Legal Metrology, Weights & Measures.",
+    total_questions: 100,
+    duration_minutes: 120,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "metrology weights measures measurement standards calibration instruments", count: 25 },
+      { subject: "Indian Polity", query: "legal metrology act weights measures regulations consumer protection", count: 20 },
+      { subject: "General Knowledge", query: "current affairs India Sikkim consumer affairs trade standards", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "Arithmetic and Logical Reasoning", query: "mathematics measurement calculation unit conversion", count: 10 },
+      { subject: "Indian Economy", query: "trade commerce consumer protection market regulation", count: 10 },
+      { subject: "Science", query: "physics measurement SI units standards instrumentation", count: 5 },
+    ],
+  },
+  "photographer": {
+    name: "Photographer Examination",
+    description: "SPSC Photographer — General English & GK + Photography, Visual Communication, and Media.",
+    total_questions: 80,
+    duration_minutes: 90,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "photography camera optics lighting exposure composition digital imaging", count: 25 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 15 },
+      { subject: "General Knowledge", query: "current affairs India Sikkim media visual arts culture", count: 15 },
+      { subject: "Science", query: "digital photography editing software image processing photo journalism", count: 10 },
+      { subject: "History", query: "history of photography art history visual communication media", count: 5 },
+      { subject: "Science", query: "optics physics light color theory darkroom techniques", count: 5 },
+      { subject: "Indian Polity", query: "media regulations press photography law copyright", count: 5 },
+    ],
+  },
+  "script-writer": {
+    name: "Script Writer Examination",
+    description: "SPSC Script Writer — General English & GK + Creative Writing, Media Production, and Communication.",
+    total_questions: 80,
+    duration_minutes: 90,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "General English", query: "English grammar vocabulary creative writing essay script writing narration", count: 30 },
+      { subject: "General Knowledge", query: "current affairs India Sikkim media entertainment film television", count: 15 },
+      { subject: "History", query: "history of media film television drama literature Sikkim culture", count: 10 },
+      { subject: "Nepali Literature", query: "Nepali literature drama poetry writing Sikkim languages", count: 10 },
+      { subject: "Indian Polity", query: "media regulation broadcasting censorship copyright intellectual property", count: 5 },
+      { subject: "Science", query: "media production audio visual technology broadcasting", count: 5 },
+      { subject: "Geography", query: "Sikkim geography culture tourism documentary", count: 5 },
+    ],
+  },
+  "feed-mill-operator": {
+    name: "Feed Mill Operator Examination",
+    description: "SPSC Feed Mill Operator — General English & GK + Animal Nutrition, Feed Processing, and Mill Operations.",
+    total_questions: 80,
+    duration_minutes: 90,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "animal nutrition feed processing feed mill operation machinery livestock feed", count: 25 },
+      { subject: "Science", query: "animal husbandry poultry dairy cattle nutrition ingredients", count: 15 },
+      { subject: "General Knowledge", query: "current affairs animal husbandry schemes India Sikkim", count: 15 },
+      { subject: "General English", query: "English grammar vocabulary comprehension", count: 10 },
+      { subject: "Science", query: "machinery operation maintenance quality control safety procedures", count: 10 },
+      { subject: "Arithmetic and Logical Reasoning", query: "calculation measurement ratio proportion mixing", count: 5 },
+    ],
+  },
+  "printing-stationery": {
+    name: "Printing & Stationery Various Posts Examination",
+    description: "SPSC Printing & Stationery — General English & GK + Printing Technology and Trade Knowledge.",
+    total_questions: 80,
+    duration_minutes: 90,
+    negative_marking: true,
+    negative_mark_value: 0.25,
+    marks_per_question: 1,
+    sections: [
+      { subject: "Science", query: "printing technology press machines paper manufacturing graphic design", count: 20 },
+      { subject: "General English", query: "English grammar vocabulary comprehension proofreading editing", count: 20 },
+      { subject: "General Knowledge", query: "current affairs India Sikkim publishing printing industry", count: 15 },
+      { subject: "Science", query: "design layout typography typesetting computer-aided design DTP", count: 10 },
+      { subject: "Arithmetic and Logical Reasoning", query: "measurement calculation paper sizes arithmetic", count: 5 },
+      { subject: "Indian Polity", query: "government press official gazette rules regulations", count: 5 },
+      { subject: "Indian Economy", query: "printing industry publishing economy stationery supply", count: 5 },
+    ],
+  },
+};
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function jsonResponse(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+function errorResponse(message: string, status = 400) {
+  return jsonResponse({ error: message }, status);
+}
+
+interface SyllabusMetadata {
+  subjects?: string[];
+  topics?: string[];
+  totalMarks?: number | null;
+  paperCount?: number | null;
+  durationMinutes?: number | null;
+  negativeMarking?: boolean | null;
+  negativeMarkValue?: number | null;
+  qualificationHints?: string[];
+}
+
+interface GenerationRequestBody {
+  pattern: string;
+  difficulty_mix?: { easy: number; medium: number; hard: number };
+  year_min?: number;
+  generation_mode?: "pyq_only" | "hybrid";
+  exam_title?: string;
+  syllabus_metadata?: SyllabusMetadata | null;
+}
+
+type SelectedQuestion = {
+  id?: string;
+  subject: string;
+  question: string;
+  options: any[];
+  correct_option_id: string;
+  explanation: string | null;
+  difficulty: string;
+  source_type: "pyq_reused" | "ai_generated_from_pyq";
+};
+
+function pickBalancedQuestions(
+  candidates: any[],
+  targetCount: number,
+  diffMix: { easy: number; medium: number; hard: number },
+): any[] {
+  const byDifficulty: Record<string, any[]> = { easy: [], medium: [], hard: [] };
+  for (const q of candidates) {
+    const d = (q.difficulty || "medium").toLowerCase();
+    if (byDifficulty[d]) {
+      byDifficulty[d].push(q);
+    } else {
+      byDifficulty.medium.push(q);
+    }
+  }
+
+  for (const key of Object.keys(byDifficulty)) {
+    byDifficulty[key] = shuffleArray(byDifficulty[key]);
+  }
+
+  const targetEasy = Math.round((targetCount * diffMix.easy) / 100);
+  const targetHard = Math.round((targetCount * diffMix.hard) / 100);
+  const targetMedium = targetCount - targetEasy - targetHard;
+
+  const picked: any[] = [];
+  picked.push(...byDifficulty.easy.slice(0, targetEasy));
+  picked.push(...byDifficulty.medium.slice(0, targetMedium));
+  picked.push(...byDifficulty.hard.slice(0, targetHard));
+
+  if (picked.length < targetCount) {
+    const pickedIds = new Set(picked.map((q) => q.id));
+    const remaining = candidates.filter((q) => !pickedIds.has(q.id));
+    picked.push(...remaining.slice(0, targetCount - picked.length));
+  }
+
+  return shuffleArray(picked).slice(0, targetCount);
+}
+
+function shuffleArray<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function cleanJsonResponse(text: string): string {
+  return text
+    .replace(/```json\s*/gi, "")
+    .replace(/```\s*/g, "")
+    .trim();
+}
+
+function buildSyllabusSummary(syllabusMetadata?: SyllabusMetadata | null): string {
+  if (!syllabusMetadata) return "No syllabus metadata available.";
+
+  const parts: string[] = [];
+  if (syllabusMetadata.subjects?.length) {
+    parts.push(`Subjects: ${syllabusMetadata.subjects.join(", ")}`);
+  }
+  if (syllabusMetadata.topics?.length) {
+    parts.push(`Topics: ${syllabusMetadata.topics.slice(0, 20).join(", ")}`);
+  }
+  if (syllabusMetadata.paperCount) {
+    parts.push(`Papers: ${syllabusMetadata.paperCount}`);
+  }
+  if (syllabusMetadata.totalMarks) {
+    parts.push(`Total marks: ${syllabusMetadata.totalMarks}`);
+  }
+  if (syllabusMetadata.durationMinutes) {
+    parts.push(`Duration minutes: ${syllabusMetadata.durationMinutes}`);
+  }
+  if (syllabusMetadata.negativeMarking !== null && syllabusMetadata.negativeMarking !== undefined) {
+    parts.push(
+      syllabusMetadata.negativeMarking
+        ? `Negative marking: yes${syllabusMetadata.negativeMarkValue ? ` (${syllabusMetadata.negativeMarkValue})` : ""}`
+        : "Negative marking: no"
+    );
+  }
+  if (syllabusMetadata.qualificationHints?.length) {
+    parts.push(`Eligibility hints: ${syllabusMetadata.qualificationHints.join(", ")}`);
+  }
+
+  return parts.join(" | ") || "No syllabus metadata available.";
+}
+
+async function generateGroundedQuestions(params: {
+  genAI: GoogleGenerativeAI;
+  examTitle: string;
+  pattern: ExamPattern;
+  section: PaperSection;
+  count: number;
+  syllabusMetadata?: SyllabusMetadata | null;
+  exemplarQuestions: any[];
+}): Promise<SelectedQuestion[]> {
+  if (params.count <= 0 || params.exemplarQuestions.length === 0) {
+    return [];
+  }
+
+  const model = params.genAI.getGenerativeModel({ model: QUESTION_GEN_MODEL });
+  const syllabusSummary = buildSyllabusSummary(params.syllabusMetadata);
+  const exemplarBlock = params.exemplarQuestions
+    .slice(0, 6)
+    .map((question: any, index: number) => {
+      const options = Array.isArray(question.options)
+        ? question.options.map((option: any) => `${option.id}. ${option.text}`).join(" | ")
+        : "";
+      return `${index + 1}. ${question.question}\nOptions: ${options}\nCorrect: ${question.correct_option_id}\nDifficulty: ${question.difficulty || "medium"}`;
+    })
+    .join("\n\n");
+
+  const prompt = `You are setting a competitive exam mock test for ${params.examTitle}.
+
+Generate exactly ${params.count} NEW multiple-choice questions for the subject "${params.section.subject}".
+
+Grounding requirements:
+- Follow this exam pattern: ${params.pattern.name}
+- Section query intent: ${params.section.query}
+- Syllabus and scheme summary: ${syllabusSummary}
+- Use the following PYQ exemplars only as style and difficulty anchors. Do not copy them verbatim.
+
+PYQ EXEMPLARS:
+${exemplarBlock}
+
+Hard constraints:
+- Return ONLY valid JSON with shape { "questions": [...] }
+- Each question must have: question, options, correct_option_id, explanation, difficulty, subject
+- Each options array must have exactly 4 options
+- All 4 options must be in the same domain and plausibly confusable
+- Avoid giveaway distractors, jokes, extreme length differences, "all of the above", "none of the above"
+- Make distractors meaningfully different from each other
+- Make at least 40% of the questions medium/hard
+- Correct answer options must be spread across a, b, c, d; do not place all correct answers in the same option position
+- Do not copy a PYQ text exactly
+- Explanations must be concise and factual
+
+Return JSON like:
+{
+  "questions": [
+    {
+      "question": "...",
+      "options": [
+        { "id": "a", "text": "..." },
+        { "id": "b", "text": "..." },
+        { "id": "c", "text": "..." },
+        { "id": "d", "text": "..." }
+      ],
+      "correct_option_id": "b",
+      "explanation": "...",
+      "difficulty": "medium",
+      "subject": "${params.section.subject}"
+    }
+  ]
+}`;
+
+  const result = await model.generateContent(prompt);
+  const responseText = cleanJsonResponse(result.response.text());
+  const parsed = JSON.parse(responseText);
+  const normalized = normalizeGeneratedQuestions(parsed.questions || [], params.section.subject);
+  return normalized.slice(0, params.count);
+}
+
+// ---------------------------------------------------------------------------
+// GET handler — list available exam patterns
+// ---------------------------------------------------------------------------
+
+function handleGetPatterns() {
+  const patterns = Object.entries(EXAM_PATTERNS).map(([id, p]) => ({
+    id,
+    name: p.name,
+    description: p.description,
+    total_questions: p.total_questions,
+    duration_minutes: p.duration_minutes,
+    negative_marking: p.negative_marking,
+    negative_mark_value: p.negative_mark_value,
+    marks_per_question: p.marks_per_question,
+    sections: p.sections.map((s) => ({ subject: s.subject, count: s.count })),
+  }));
+  return jsonResponse({ patterns });
+}
+
+// ---------------------------------------------------------------------------
+// POST handler — generate mock test and insert into DB
+// ---------------------------------------------------------------------------
+
+async function handleGenerateMockTest(
+  req: Request,
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+) {
+  const startTime = Date.now();
+
+  let body: GenerationRequestBody;
+  try {
+    body = await req.json();
+  } catch {
+    return errorResponse("Invalid JSON request body.", 400);
+  }
+
+  if (!body.pattern || !EXAM_PATTERNS[body.pattern]) {
+    const available = Object.keys(EXAM_PATTERNS);
+    return errorResponse(
+      `Invalid pattern "${body.pattern}". Available: ${available.join(", ")}`,
+      400,
+    );
+  }
+
+  const pattern = EXAM_PATTERNS[body.pattern];
+  const diffMix = body.difficulty_mix || { easy: 30, medium: 50, hard: 20 };
+  const generationMode = body.generation_mode || "hybrid";
+  const examTitle = body.exam_title || pattern.name;
+  const syllabusMetadata = body.syllabus_metadata || null;
+  // Auto-filter stale current affairs: default to current year - 2
+  const yearMin = body.year_min ?? new Date().getFullYear() - 2;
+
+  const geminiKey = Deno.env.get("GOOGLE_GEMINI_API_KEY");
+  if (!geminiKey) {
+    return errorResponse("AI service not configured.", 500);
+  }
+
+  const genAI = new GoogleGenerativeAI(geminiKey);
+  const embModel = genAI.getGenerativeModel({ model: EMBEDDING_MODEL });
+
+  // Collect all questions across sections
+  const allQuestions: SelectedQuestion[] = [];
+
+  const allUsedIds: string[] = [];
+  const sectionMeta: Array<{ subject: string; count: number }> = [];
+  let reusedQuestionCount = 0;
+  let aiGeneratedQuestionCount = 0;
+
+  for (const section of pattern.sections) {
+    let embedding: number[];
+    try {
+      const result = await embModel.embedContent({
+        content: { parts: [{ text: section.query }] },
+        taskType: "RETRIEVAL_QUERY" as any,
+        outputDimensionality: EMBEDDING_DIMENSIONS,
+      } as any);
+      embedding = result.embedding.values;
+    } catch (err) {
+      console.error(`[mock-test] Embedding failed for ${section.subject}:`, err);
+      sectionMeta.push({ subject: section.subject, count: 0 });
+      continue;
+    }
+
+    const fetchLimit = Math.min(section.count * 3, 60);
+    const { data, error } = await supabase.rpc("search_pyq_semantic", {
+      query_embedding: `[${embedding.join(",")}]`,
+      p_subject: section.subject,
+      p_exam_names: HARDCODED_EXAM_NAMES,
+      p_match_threshold: 0.2,
+      p_limit: fetchLimit,
+      p_exclude_ids: allUsedIds,
+      p_year_min: yearMin,
+    });
+
+    if (error || !data) {
+      console.error(`[mock-test] Search failed for ${section.subject}:`, error);
+      sectionMeta.push({ subject: section.subject, count: 0 });
+      continue;
+    }
+
+    const pyqReuseTarget = generationMode === "hybrid"
+      ? Math.max(1, Math.min(section.count, Math.round(section.count * 0.6)))
+      : section.count;
+    const picked = pickBalancedQuestions(data, pyqReuseTarget, diffMix);
+    const remainingToGenerate = Math.max(0, section.count - picked.length);
+    let generated: SelectedQuestion[] = [];
+
+    if (generationMode === "hybrid" && remainingToGenerate > 0) {
+      try {
+        generated = await generateGroundedQuestions({
+          genAI,
+          examTitle,
+          pattern,
+          section,
+          count: remainingToGenerate,
+          syllabusMetadata,
+          exemplarQuestions: data,
+        });
+      } catch (generationError) {
+        console.error(`[mock-test] Gemini generation failed for ${section.subject}:`, generationError);
+      }
+    }
+
+    if (picked.length + generated.length < section.count) {
+      const alreadyPickedIds = new Set(picked.map((q) => q.id));
+      const topUp = data
+        .filter((q: any) => !alreadyPickedIds.has(q.id))
+        .slice(0, section.count - picked.length - generated.length);
+      picked.push(...topUp);
+    }
+
+    for (const q of picked) {
+      allUsedIds.push(q.id);
+      allQuestions.push({
+        subject: section.subject,
+        question: q.question,
+        options: q.options || [],
+        correct_option_id: q.correct_option_id || "a",
+        explanation: q.explanation || null,
+        difficulty: q.difficulty || "medium",
+        source_type: "pyq_reused",
+      });
+      reusedQuestionCount++;
+    }
+
+    for (const q of generated) {
+      allQuestions.push({
+        ...q,
+        subject: q.subject || section.subject,
+      });
+      aiGeneratedQuestionCount++;
+    }
+
+    sectionMeta.push({ subject: section.subject, count: picked.length + generated.length });
+  }
+
+  if (allQuestions.length === 0) {
+    return errorResponse("No questions found for this exam pattern.", 404);
+  }
+
+  const finalizedQuestions = rebalanceCorrectAnswerDistribution(shuffleArray(allQuestions));
+
+  const generationTimeMs = Date.now() - startTime;
+  const totalQuestions = finalizedQuestions.length;
+  const totalMarks = totalQuestions * pattern.marks_per_question;
+
+  // Insert test into DB
+  const { data: testRow, error: testError } = await supabase
+    .from("tests")
+    .insert({
+      title: `${pattern.name} — AI Mock Test`,
+      description: pattern.description,
+      duration_minutes: pattern.duration_minutes,
+      total_marks: totalMarks,
+      passing_marks: Math.round(totalMarks * 0.4),
+      test_type: "mcq",
+      difficulty: "moderate",
+      is_premium: false,
+      is_active: true,
+      created_by: userId,
+      source: "ai_mock",
+      mock_meta: {
+        pattern: body.pattern,
+        negative_marking: pattern.negative_marking,
+        negative_mark_value: pattern.negative_mark_value,
+        marks_per_question: pattern.marks_per_question,
+        sections: sectionMeta,
+        generation_mode: generationMode,
+        exam_title: examTitle,
+        syllabus_metadata: syllabusMetadata,
+        source_breakdown: {
+          pyq_reused: reusedQuestionCount,
+          ai_generated_from_pyq: aiGeneratedQuestionCount,
+        },
+        generation_time_ms: generationTimeMs,
+      },
+    })
+    .select("id")
+    .single();
+
+  if (testError || !testRow) {
+    console.error("[mock-test] Failed to insert test:", testError);
+    return errorResponse("Failed to create test.", 500);
+  }
+
+  const testId = testRow.id;
+
+  // Insert questions into DB
+  const questionRows = finalizedQuestions.map((q, idx) => ({
+    test_id: testId,
+    content: q.question,
+    type: "mcq",
+    options: q.options,
+    correct_answer: q.correct_option_id,
+    marks: pattern.marks_per_question,
+    negative_marks: pattern.negative_mark_value,
+    question_source: q.source_type,
+    question_meta: {
+      subject: q.subject,
+      difficulty: q.difficulty,
+      source_type: q.source_type,
+      exam_title: examTitle,
+      pattern: body.pattern,
+      generation_mode: generationMode,
+      syllabus_applied: Boolean(syllabusMetadata),
+      generated_at: new Date().toISOString(),
+    },
+    explanation: q.source_type === "ai_generated_from_pyq"
+      ? `[AI-generated from PYQ + syllabus] ${q.explanation || ""}`.trim()
+      : q.explanation,
+    sort_order: idx + 1,
+  }));
+
+  let { error: questionsError } = await supabase
+    .from("questions")
+    .insert(questionRows);
+
+  if (questionsError) {
+    console.warn("[mock-test] Initial question insert failed, retrying without provenance fields", questionsError);
+    const fallbackRows = questionRows.map(({ question_source, question_meta, ...row }) => row);
+    const fallbackResult = await supabase
+      .from("questions")
+      .insert(fallbackRows);
+    questionsError = fallbackResult.error;
+  }
+
+  if (questionsError) {
+    console.error("[mock-test] Failed to insert questions:", questionsError);
+    // Clean up the test row
+    await supabase.from("tests").delete().eq("id", testId);
+    return errorResponse("Failed to create test questions.", 500);
+  }
+
+  console.log(
+    `[mock-test] Created test ${testId} with ${totalQuestions} questions in ${generationTimeMs}ms`,
+  );
+
+  return jsonResponse({
+    test_id: testId,
+    total_questions: totalQuestions,
+    generation_time_ms: generationTimeMs,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Main handler
+// ---------------------------------------------------------------------------
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  if (req.method === "GET") {
+    return handleGetPatterns();
+  }
+
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return errorResponse("Supabase not configured.", 500);
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Authenticate via JWT
+    const token = req.headers.get("Authorization")?.replace("Bearer ", "");
+    if (!token) {
+      return errorResponse("Authentication required.", 401);
+    }
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return errorResponse("Invalid or expired token.", 401);
+    }
+
+    if (req.method === "POST") {
+      return await handleGenerateMockTest(req, supabase, user.id);
+    }
+
+    return errorResponse(`Method ${req.method} not allowed.`, 405);
+  } catch (err) {
+    console.error("[mock-test] Unhandled error:", err);
+    return errorResponse("An unexpected error occurred.", 500);
+  }
+});

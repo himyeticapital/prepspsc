@@ -1,0 +1,20 @@
+{
+  "crons": [
+    {
+      "path": "/api/news/fetch",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/renewal-reminders",
+      "schedule": "30 2 * * *"
+    },
+    {
+      "path": "/api/cron/process-conventional-queue",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/migrate-mcq-explanations",
+      "schedule": "0 4 * * *"
+    }
+  ]
+}

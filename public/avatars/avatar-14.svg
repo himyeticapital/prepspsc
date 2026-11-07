@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Anime Heroine - Long pink hair, magical girl style -->
+  <defs>
+    <linearGradient id="hair14" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f472b6"/>
+      <stop offset="100%" style="stop-color:#ec4899"/>
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="#a855f7"/>
+
+  <!-- Long flowing hair behind -->
+  <ellipse cx="50" cy="70" rx="38" ry="30" fill="url(#hair14)"/>
+  <path d="M12 70 Q15 85 20 100" fill="url(#hair14)"/>
+  <path d="M88 70 Q85 85 80 100" fill="url(#hair14)"/>
+
+  <!-- Face -->
+  <ellipse cx="50" cy="50" rx="20" ry="22" fill="#fde8e0"/>
+
+  <!-- Ears -->
+  <ellipse cx="30" cy="50" rx="3" ry="4" fill="#f8d8d0"/>
+  <ellipse cx="70" cy="50" rx="3" ry="4" fill="#f8d8d0"/>
+
+  <!-- Front hair -->
+  <path d="M30 44 Q34 18 50 14 Q66 18 70 44 Q64 28 50 24 Q36 28 30 44" fill="url(#hair14)"/>
+  <!-- Side hair flowing -->
+  <path d="M28 44 Q22 50 18 75 Q20 85 25 82 Q22 65 28 50" fill="url(#hair14)"/>
+  <path d="M72 44 Q78 50 82 75 Q80 85 75 82 Q78 65 72 50" fill="url(#hair14)"/>
+  <!-- Bangs -->
+  <path d="M34 42 Q40 36 46 44 L44 48 Q40 42 36 46" fill="url(#hair14)"/>
+  <path d="M66 42 Q60 36 54 44 L56 48 Q60 42 64 46" fill="url(#hair14)"/>
+  <!-- Center bang -->
+  <path d="M46 40 Q50 34 54 40 L52 46 Q50 42 48 46" fill="url(#hair14)"/>
+
+  <!-- Hair accessories - bows -->
+  <circle cx="28" cy="36" r="5" fill="#fbbf24"/>
+  <path d="M22 36 L28 32 L28 40 L22 36" fill="#f59e0b"/>
+  <path d="M34 36 L28 32 L28 40 L34 36" fill="#f59e0b"/>
+  <circle cx="72" cy="36" r="5" fill="#fbbf24"/>
+  <path d="M66 36 L72 32 L72 40 L66 36" fill="#f59e0b"/>
+  <path d="M78 36 L72 32 L72 40 L78 36" fill="#f59e0b"/>
+
+  <!-- Big sparkly anime eyes -->
+  <ellipse cx="40" cy="50" rx="7" ry="8" fill="white"/>
+  <ellipse cx="60" cy="50" rx="7" ry="8" fill="white"/>
+  <ellipse cx="41" cy="51" rx="5" ry="6" fill="#a855f7"/>
+  <ellipse cx="61" cy="51" rx="5" ry="6" fill="#a855f7"/>
+  <ellipse cx="41" cy="52" rx="2.5" ry="3" fill="#7c3aed"/>
+  <ellipse cx="61" cy="52" rx="2.5" ry="3" fill="#7c3aed"/>
+  <!-- Sparkles -->
+  <circle cx="43" cy="48" r="2.5" fill="white"/>
+  <circle cx="63" cy="48" r="2.5" fill="white"/>
+  <circle cx="39" cy="52" r="1.2" fill="white"/>
+  <circle cx="59" cy="52" r="1.2" fill="white"/>
+
+  <!-- Cute eyebrows -->
+  <path d="M35 42 Q40 40 45 43" stroke="#db2777" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M65 42 Q60 40 55 43" stroke="#db2777" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Blush -->
+  <ellipse cx="34" cy="56" rx="4" ry="2" fill="#fca5a5" opacity="0.6"/>
+  <ellipse cx="66" cy="56" rx="4" ry="2" fill="#fca5a5" opacity="0.6"/>
+
+  <!-- Nose -->
+  <circle cx="50" cy="55" r="1.5" fill="#f0c8c0"/>
+
+  <!-- Happy smile -->
+  <path d="M44 62 Q50 68 56 62" stroke="#c97070" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- Outfit - magical girl style -->
+  <path d="M30 82 Q30 72 42 70 L50 75 L58 70 Q70 72 70 82 L70 100 L30 100 Z" fill="#f472b6"/>
+  <path d="M42 70 L50 78 L58 70" fill="white"/>
+  <!-- Bow on chest -->
+  <circle cx="50" cy="76" r="3" fill="#fbbf24"/>
+  <path d="M44 76 L50 73 L50 79 L44 76" fill="#f59e0b"/>
+  <path d="M56 76 L50 73 L50 79 L56 76" fill="#f59e0b"/>
+</svg>

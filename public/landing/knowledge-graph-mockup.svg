@@ -1,0 +1,211 @@
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="kgBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#080d1a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0d1424;stop-opacity:1" />
+    </linearGradient>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 Z" fill="rgba(255,255,255,0.2)"/>
+    </marker>
+    <marker id="arrowTeal" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 Z" fill="rgba(45, 212, 191, 0.6)"/>
+    </marker>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="goldGlow">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="800" fill="url(#kgBg)"/>
+
+  <!-- Ambient glows -->
+  <circle cx="400" cy="350" r="300" fill="rgba(45, 212, 191, 0.04)"/>
+  <circle cx="800" cy="400" r="250" fill="rgba(168, 85, 247, 0.04)"/>
+
+  <!-- Outer card frame -->
+  <rect x="60" y="60" width="1080" height="680" rx="24" fill="rgba(15, 20, 35, 0.9)" stroke="rgba(45, 212, 191, 0.15)" stroke-width="1.5"/>
+
+  <!-- Header bar -->
+  <rect x="60" y="60" width="1080" height="60" rx="24" fill="rgba(45, 212, 191, 0.07)"/>
+  <rect x="60" y="96" width="1080" height="24" fill="rgba(45, 212, 191, 0.07)"/>
+
+  <!-- Network icon in header -->
+  <circle cx="105" cy="90" r="5" fill="rgba(45, 212, 191, 0.6)" stroke="#2DD4BF" stroke-width="1"/>
+  <circle cx="122" cy="82" r="4" fill="rgba(168, 85, 247, 0.6)" stroke="#a855f7" stroke-width="1"/>
+  <circle cx="122" cy="98" r="4" fill="rgba(249, 115, 22, 0.6)" stroke="#fb923c" stroke-width="1"/>
+  <line x1="110" y1="88" x2="118" y2="84" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <line x1="110" y1="92" x2="118" y2="96" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <text x="142" y="96" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#e2e8f0">Knowledge Graph</text>
+
+  <!-- Legend chips top right -->
+  <rect x="750" y="72" width="70" height="18" rx="9" fill="rgba(45, 212, 191, 0.15)" stroke="rgba(45, 212, 191, 0.3)" stroke-width="1"/>
+  <text x="785" y="84" font-family="Arial, sans-serif" font-size="8" fill="#2DD4BF" text-anchor="middle">Polity</text>
+  <rect x="830" y="72" width="70" height="18" rx="9" fill="rgba(168, 85, 247, 0.15)" stroke="rgba(168, 85, 247, 0.3)" stroke-width="1"/>
+  <text x="865" y="84" font-family="Arial, sans-serif" font-size="8" fill="#a855f7" text-anchor="middle">History</text>
+  <rect x="910" y="72" width="70" height="18" rx="9" fill="rgba(249, 115, 22, 0.15)" stroke="rgba(249, 115, 22, 0.3)" stroke-width="1"/>
+  <text x="945" y="84" font-family="Arial, sans-serif" font-size="8" fill="#fb923c" text-anchor="middle">Geography</text>
+  <rect x="990" y="72" width="70" height="18" rx="9" fill="rgba(34, 211, 238, 0.15)" stroke="rgba(34, 211, 238, 0.3)" stroke-width="1"/>
+  <text x="1025" y="84" font-family="Arial, sans-serif" font-size="8" fill="#22d3ee" text-anchor="middle">Economy</text>
+
+  <!-- ═══ GRAPH EDGES (curved paths with arrows) ═══ -->
+
+  <!-- Preamble → Fundamental Rights -->
+  <path d="M 280 240 Q 310 290 340 320" stroke="rgba(45, 212, 191, 0.4)" stroke-width="1.5" fill="none" marker-end="url(#arrowTeal)"/>
+  <!-- Preamble → Parliamentary System -->
+  <path d="M 300 230 Q 420 200 520 220" stroke="rgba(45, 212, 191, 0.25)" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <!-- Fundamental Rights → DPSP -->
+  <path d="M 370 360 Q 400 410 380 470" stroke="rgba(45, 212, 191, 0.3)" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <!-- Maurya → Gupta (History) -->
+  <path d="M 200 540 Q 250 510 300 510" stroke="rgba(168, 85, 247, 0.4)" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <!-- Gupta → Mughal -->
+  <path d="M 370 510 Q 420 490 460 500" stroke="rgba(168, 85, 247, 0.3)" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <!-- Physical Geography → Monsoon -->
+  <path d="M 700 330 Q 750 380 780 420" stroke="rgba(249, 115, 22, 0.35)" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <!-- Physical Geography → Rivers -->
+  <path d="M 680 340 Q 660 420 640 460" stroke="rgba(249, 115, 22, 0.25)" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <!-- GDP Basics → Inflation -->
+  <path d="M 900 250 Q 960 300 950 360" stroke="rgba(34, 211, 238, 0.35)" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <!-- GDP → Monetary Policy -->
+  <path d="M 880 265 Q 880 330 870 400" stroke="rgba(34, 211, 238, 0.25)" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <!-- Parliamentary → Constitutional Amendments -->
+  <path d="M 560 250 Q 620 300 660 340" stroke="rgba(45, 212, 191, 0.2)" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- ═══ GRAPH NODES ═══ -->
+
+  <!-- MASTERED nodes (filled, teal) -->
+  <!-- Preamble — mastered -->
+  <circle cx="270" cy="225" r="30" fill="rgba(45, 212, 191, 0.85)" stroke="#2DD4BF" stroke-width="2" filter="url(#glow)"/>
+  <text x="270" y="221" font-family="Arial, sans-serif" font-size="9" fill="#0a1628" text-anchor="middle" font-weight="bold">Preamble</text>
+  <text x="270" y="233" font-family="Arial, sans-serif" font-size="13" fill="#0a1628" text-anchor="middle">✓</text>
+
+  <!-- Maurya Era — mastered -->
+  <circle cx="165" cy="530" r="26" fill="rgba(168, 85, 247, 0.85)" stroke="#a855f7" stroke-width="2" filter="url(#glow)"/>
+  <text x="165" y="526" font-family="Arial, sans-serif" font-size="8" fill="#ffffff" text-anchor="middle" font-weight="bold">Maurya</text>
+  <text x="165" y="538" font-family="Arial, sans-serif" font-size="11" fill="#ffffff" text-anchor="middle">✓</text>
+
+  <!-- Gupta Era — mastered -->
+  <circle cx="335" cy="505" r="26" fill="rgba(168, 85, 247, 0.85)" stroke="#a855f7" stroke-width="2"/>
+  <text x="335" y="501" font-family="Arial, sans-serif" font-size="8" fill="#ffffff" text-anchor="middle" font-weight="bold">Gupta Era</text>
+  <text x="335" y="513" font-family="Arial, sans-serif" font-size="11" fill="#ffffff" text-anchor="middle">✓</text>
+
+  <!-- GDP Basics — mastered -->
+  <circle cx="890" cy="230" r="26" fill="rgba(34, 211, 238, 0.85)" stroke="#22d3ee" stroke-width="2" filter="url(#glow)"/>
+  <text x="890" y="226" font-family="Arial, sans-serif" font-size="8" fill="#0a1628" text-anchor="middle" font-weight="bold">GDP</text>
+  <text x="890" y="238" font-family="Arial, sans-serif" font-size="11" fill="#0a1628" text-anchor="middle">✓</text>
+
+  <!-- IN-PROGRESS nodes (80% fill + pulse ring) -->
+  <!-- Fundamental Rights — in-progress -->
+  <circle cx="360" cy="340" r="32" fill="rgba(45, 212, 191, 0)" stroke="rgba(45, 212, 191, 0.3)" stroke-width="8" opacity="0.4">
+    <animate attributeName="r" values="32;40;32" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0;0.4" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="360" cy="340" r="32" fill="rgba(45, 212, 191, 0.65)" stroke="#2DD4BF" stroke-width="2"/>
+  <text x="360" y="334" font-family="Arial, sans-serif" font-size="8" fill="#0a1628" text-anchor="middle" font-weight="bold">Fundamental</text>
+  <text x="360" y="345" font-family="Arial, sans-serif" font-size="8" fill="#0a1628" text-anchor="middle" font-weight="bold">Rights</text>
+  <text x="360" y="357" font-family="Arial, sans-serif" font-size="8" fill="#0a1628" text-anchor="middle">in progress</text>
+
+  <!-- Physical Geography — in progress -->
+  <circle cx="680" cy="305" r="30" fill="rgba(249, 115, 22, 0)" stroke="rgba(249, 115, 22, 0.4)" stroke-width="8" opacity="0.4">
+    <animate attributeName="r" values="30;38;30" dur="2.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0;0.4" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="680" cy="305" r="30" fill="rgba(249, 115, 22, 0.65)" stroke="#fb923c" stroke-width="2"/>
+  <text x="680" y="300" font-family="Arial, sans-serif" font-size="8" fill="#ffffff" text-anchor="middle" font-weight="bold">Physical</text>
+  <text x="680" y="311" font-family="Arial, sans-serif" font-size="8" fill="#ffffff" text-anchor="middle" font-weight="bold">Geography</text>
+
+  <!-- READY nodes (transparent with border, bright) -->
+  <!-- Parliamentary System — GOLD (recommended) -->
+  <circle cx="545" cy="235" r="34" fill="rgba(251, 191, 36, 0)" stroke="rgba(251, 191, 36, 0.6)" stroke-width="10" opacity="0.3">
+    <animate attributeName="r" values="34;42;34" dur="1.8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0;0.3" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="545" cy="235" r="34" fill="rgba(251, 191, 36, 0.08)" stroke="#fbbf24" stroke-width="2.5"/>
+  <text x="545" y="229" font-family="Arial, sans-serif" font-size="8" fill="#fbbf24" text-anchor="middle" font-weight="bold">Parliamentary</text>
+  <text x="545" y="240" font-family="Arial, sans-serif" font-size="8" fill="#fbbf24" text-anchor="middle" font-weight="bold">System</text>
+  <text x="545" y="252" font-family="Arial, sans-serif" font-size="10" fill="#fbbf24" text-anchor="middle">★</text>
+
+  <!-- Inflation — ready -->
+  <circle cx="960" cy="385" r="26" fill="rgba(34, 211, 238, 0.08)" stroke="#22d3ee" stroke-width="2"/>
+  <text x="960" y="381" font-family="Arial, sans-serif" font-size="8" fill="#22d3ee" text-anchor="middle" font-weight="bold">Inflation</text>
+  <text x="960" y="393" font-family="Arial, sans-serif" font-size="8" fill="#22d3ee" text-anchor="middle">ready</text>
+
+  <!-- Mughal — ready -->
+  <circle cx="490" cy="510" r="26" fill="rgba(168, 85, 247, 0.08)" stroke="#a855f7" stroke-width="2"/>
+  <text x="490" y="506" font-family="Arial, sans-serif" font-size="8" fill="#a855f7" text-anchor="middle" font-weight="bold">Mughal</text>
+  <text x="490" y="518" font-family="Arial, sans-serif" font-size="8" fill="#a855f7" text-anchor="middle">ready</text>
+
+  <!-- LOCKED nodes (dark, dimmed) -->
+  <!-- DPSP — locked -->
+  <circle cx="375" cy="500" r="26" fill="rgba(20, 25, 40, 0.9)" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" opacity="0.7"/>
+  <text x="375" y="496" font-family="Arial, sans-serif" font-size="8" fill="rgba(255,255,255,0.3)" text-anchor="middle">DPSP</text>
+  <text x="375" y="508" font-family="Arial, sans-serif" font-size="10" fill="rgba(255,255,255,0.2)" text-anchor="middle">🔒</text>
+
+  <!-- Constitutional Amendments — locked -->
+  <circle cx="695" cy="375" r="28" fill="rgba(20, 25, 40, 0.9)" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" opacity="0.7"/>
+  <text x="695" y="370" font-family="Arial, sans-serif" font-size="7.5" fill="rgba(255,255,255,0.3)" text-anchor="middle">Constitutional</text>
+  <text x="695" y="381" font-family="Arial, sans-serif" font-size="7.5" fill="rgba(255,255,255,0.3)" text-anchor="middle">Amendments</text>
+  <text x="695" y="393" font-family="Arial, sans-serif" font-size="10" fill="rgba(255,255,255,0.2)" text-anchor="middle">🔒</text>
+
+  <!-- Rivers — locked -->
+  <circle cx="635" cy="490" r="24" fill="rgba(20, 25, 40, 0.9)" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" opacity="0.7"/>
+  <text x="635" y="486" font-family="Arial, sans-serif" font-size="8" fill="rgba(255,255,255,0.3)" text-anchor="middle">Rivers</text>
+  <text x="635" y="498" font-family="Arial, sans-serif" font-size="10" fill="rgba(255,255,255,0.2)" text-anchor="middle">🔒</text>
+
+  <!-- Monetary Policy — locked -->
+  <circle cx="868" cy="420" r="26" fill="rgba(20, 25, 40, 0.9)" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" opacity="0.7"/>
+  <text x="868" y="415" font-family="Arial, sans-serif" font-size="7.5" fill="rgba(255,255,255,0.3)" text-anchor="middle">Monetary</text>
+  <text x="868" y="426" font-family="Arial, sans-serif" font-size="7.5" fill="rgba(255,255,255,0.3)" text-anchor="middle">Policy</text>
+  <text x="868" y="438" font-family="Arial, sans-serif" font-size="10" fill="rgba(255,255,255,0.2)" text-anchor="middle">🔒</text>
+
+  <!-- Monsoon — locked -->
+  <circle cx="800" cy="445" r="26" fill="rgba(20, 25, 40, 0.9)" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" opacity="0.7"/>
+  <text x="800" y="440" font-family="Arial, sans-serif" font-size="8" fill="rgba(255,255,255,0.3)" text-anchor="middle">Monsoon</text>
+  <text x="800" y="452" font-family="Arial, sans-serif" font-size="10" fill="rgba(255,255,255,0.2)" text-anchor="middle">🔒</text>
+
+  <!-- "Study Next" bottom panel -->
+  <rect x="80" y="640" width="1040" height="80" rx="0" fill="rgba(10, 15, 28, 0.95)" stroke="rgba(45, 212, 191, 0.15)" stroke-width="0"/>
+  <rect x="60" y="698" width="1080" height="42" rx="16" fill="rgba(10, 15, 28, 0.95)" stroke="rgba(45, 212, 191, 0.15)" stroke-width="1"/>
+  <rect x="60" y="658" width="1080" height="82" rx="0" fill="rgba(10, 15, 28, 0.95)"/>
+  <rect x="60" y="656" width="1080" height="84" rx="16" fill="rgba(10, 15, 28, 0.9)" stroke="rgba(45, 212, 191, 0.2)" stroke-width="1"/>
+
+  <text x="90" y="677" font-family="Arial, sans-serif" font-size="11" fill="#94a3b8">Study Next</text>
+
+  <!-- Recommendation card 1 (gold — top pick) -->
+  <rect x="90" y="683" width="290" height="46" rx="10" fill="rgba(251, 191, 36, 0.1)" stroke="rgba(251, 191, 36, 0.4)" stroke-width="1.5"/>
+  <circle cx="113" cy="706" r="8" fill="rgba(251, 191, 36, 0.3)" stroke="#fbbf24" stroke-width="1"/>
+  <text x="113" y="710" font-family="Arial, sans-serif" font-size="9" fill="#fbbf24" text-anchor="middle">★</text>
+  <text x="128" y="702" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#fbbf24">Parliamentary System</text>
+  <text x="128" y="716" font-family="Arial, sans-serif" font-size="8" fill="#94a3b8">Unlocks 3 topics · High importance</text>
+  <rect x="310" y="692" width="58" height="14" rx="7" fill="rgba(45, 212, 191, 0.15)" stroke="rgba(45, 212, 191, 0.3)" stroke-width="1"/>
+  <text x="339" y="703" font-family="Arial, sans-serif" font-size="7" fill="#2DD4BF" text-anchor="middle">Polity</text>
+
+  <!-- Recommendation card 2 -->
+  <rect x="395" y="683" width="250" height="46" rx="10" fill="rgba(34, 211, 238, 0.06)" stroke="rgba(34, 211, 238, 0.2)" stroke-width="1"/>
+  <text x="418" y="702" font-family="Arial, sans-serif" font-size="10" fill="#22d3ee">Inflation</text>
+  <text x="418" y="716" font-family="Arial, sans-serif" font-size="8" fill="#94a3b8">18 PYQ questions</text>
+  <rect x="600" y="692" width="58" height="14" rx="7" fill="rgba(34, 211, 238, 0.1)" stroke="rgba(34, 211, 238, 0.25)" stroke-width="1"/>
+  <text x="629" y="703" font-family="Arial, sans-serif" font-size="7" fill="#22d3ee" text-anchor="middle">Economy</text>
+
+  <!-- Recommendation card 3 -->
+  <rect x="660" y="683" width="250" height="46" rx="10" fill="rgba(168, 85, 247, 0.06)" stroke="rgba(168, 85, 247, 0.2)" stroke-width="1"/>
+  <text x="683" y="702" font-family="Arial, sans-serif" font-size="10" fill="#a855f7">Mughal Empire</text>
+  <text x="683" y="716" font-family="Arial, sans-serif" font-size="8" fill="#94a3b8">Unlocks 2 topics</text>
+  <rect x="871" y="692" width="58" height="14" rx="7" fill="rgba(168, 85, 247, 0.1)" stroke="rgba(168, 85, 247, 0.25)" stroke-width="1"/>
+  <text x="900" y="703" font-family="Arial, sans-serif" font-size="7" fill="#a855f7" text-anchor="middle">History</text>
+
+  <!-- Floating dots -->
+  <circle cx="1050" cy="580" r="2" fill="#2DD4BF" opacity="0.25">
+    <animate attributeName="opacity" values="0.1;0.5;0.1" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="120" cy="600" r="1.5" fill="#a855f7" opacity="0.3">
+    <animate attributeName="opacity" values="0.15;0.55;0.15" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="580" cy="620" r="2" fill="#fb923c" opacity="0.25">
+    <animate attributeName="cy" values="620;610;620" dur="4s" repeatCount="indefinite"/>
+  </circle>
+</svg>

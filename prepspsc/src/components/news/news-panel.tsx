@@ -1,0 +1,147 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { ExternalLink, Loader2, RefreshCw } from "lucide-react";
+import { useNewsStore } from "@/stores/news-store";
+import { NEWS_CATEGORIES } from "@/types/news.types";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+function formatTimeAgo(dateString: string | null): string {
+  if (!dateString) return "";
+
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+
+  return date.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+  });
+}
+
+export function NewsPanel() {
+  const {
+    articles,
+    activeCategory,
+    isLoading,
+    error,
+    totalAvailable,
+    setCategory,
+    fetchNews,
+  } = useNewsStore();
+
+  const handleArticleClick = (url: string) => {
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 20, scale: 0.95 }}
+      transition={{ type: "spring", damping: 25, stiffness: 300 }}
+      className="fixed bottom-24 right-6 z-50 w-[380px] h-[500px] rounded-2xl bg-background/95 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/50 overflow-hidden flex flex-col"
+    >
+      {/* Header */}
+      <div className="p-4 border-b border-white/10 bg-gradient-to-r from-primary/10 to-accent/10">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">📰</span>
+            <h3 className="font-semibold text-white">Current Affairs Bot</h3>
+          </div>
+          <button
+            onClick={() => fetchNews(activeCategory)}
+            className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white"
+            title="Refresh"
+          >
+            <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+          </button>
+        </div>
+
+        {/* Category Tabs */}
+        <div className="flex gap-1">
+          {NEWS_CATEGORIES.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setCategory(cat.id)}
+              className={cn(
+                "flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all",
+                activeCategory === cat.id
+                  ? "bg-primary text-white shadow-lg shadow-primary/30"
+                  : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
+              )}
+            >
+              <span className="mr-1">{cat.icon}</span>
+              {cat.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Content - Scrollable area */}
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3 space-y-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/30">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-12 text-white/60">
+            <p>{error}</p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => fetchNews(activeCategory)}
+              className="mt-2"
+            >
+              Try Again
+            </Button>
+          </div>
+        ) : articles.length === 0 ? (
+          <div className="text-center py-12 text-white/60">
+            <p>No news available for this category.</p>
+          </div>
+        ) : (
+          <>
+            {articles.map((article, index) => (
+              <motion.button
+                key={article.id || index}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                onClick={() => handleArticleClick(article.source_url)}
+                className="w-full text-left p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-all group"
+              >
+                <h4 className="text-sm font-medium text-white line-clamp-2 mb-1.5 group-hover:text-primary transition-colors">
+                  {article.title}
+                </h4>
+                <div className="flex items-center justify-between text-xs text-white/50">
+                  <span>{article.source_name}</span>
+                  <div className="flex items-center gap-1">
+                    <span>{formatTimeAgo(article.published_at)}</span>
+                    <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </div>
+              </motion.button>
+            ))}
+          </>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="p-3 border-t border-white/10 bg-white/5">
+        <div className="text-center text-xs text-white/50">
+          <span>{totalAvailable} articles available</span>
+        </div>
+      </div>
+    </motion.div>
+  );
+}

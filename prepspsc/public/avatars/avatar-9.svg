@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Pretty Sunny - Soft curls, aesthetic warm tones -->
+  <defs>
+    <linearGradient id="hair9" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#451a03"/>
+      <stop offset="100%" style="stop-color:#78350f"/>
+    </linearGradient>
+    <linearGradient id="bg9" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a78bfa"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="url(#bg9)"/>
+
+  <!-- Voluminous curly hair back -->
+  <ellipse cx="50" cy="52" rx="36" ry="40" fill="url(#hair9)"/>
+
+  <!-- Beautiful curls cascading -->
+  <circle cx="20" cy="55" r="8" fill="#5c2d0e"/>
+  <circle cx="18" cy="68" r="7" fill="#5c2d0e"/>
+  <circle cx="22" cy="80" r="6" fill="#5c2d0e"/>
+  <circle cx="80" cy="55" r="8" fill="#5c2d0e"/>
+  <circle cx="82" cy="68" r="7" fill="#5c2d0e"/>
+  <circle cx="78" cy="80" r="6" fill="#5c2d0e"/>
+  <!-- More curl definition -->
+  <circle cx="26" cy="62" r="5" fill="#6b3a10"/>
+  <circle cx="74" cy="62" r="5" fill="#6b3a10"/>
+
+  <!-- Face -->
+  <ellipse cx="50" cy="46" rx="20" ry="22" fill="#c68642"/>
+
+  <!-- Hair front - soft voluminous top -->
+  <path d="M28 44 Q30 18 50 14 Q70 18 72 44 Q68 26 50 24 Q32 26 28 44" fill="url(#hair9)"/>
+  <!-- Soft curls framing face -->
+  <circle cx="28" cy="42" r="6" fill="url(#hair9)"/>
+  <circle cx="72" cy="42" r="6" fill="url(#hair9)"/>
+  <circle cx="32" cy="36" r="5" fill="#5c2d0e"/>
+  <circle cx="68" cy="36" r="5" fill="#5c2d0e"/>
+  <!-- Hair shine highlights -->
+  <path d="M40 20 Q50 16 60 20" stroke="#92400e" stroke-width="2" fill="none" opacity="0.5"/>
+
+  <!-- Pretty gold stud earrings -->
+  <circle cx="29" cy="52" r="2.5" fill="#fbbf24"/>
+  <circle cx="29" cy="52" r="1.5" fill="#fef3c7"/>
+  <circle cx="71" cy="52" r="2.5" fill="#fbbf24"/>
+  <circle cx="71" cy="52" r="1.5" fill="#fef3c7"/>
+
+  <!-- Soft arched eyebrows -->
+  <path d="M35 36 Q40 33 45 36" stroke="#3d2317" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M55 36 Q60 33 65 36" stroke="#3d2317" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+
+  <!-- Beautiful expressive eyes -->
+  <ellipse cx="40" cy="44" rx="4.5" ry="5" fill="#1f2937"/>
+  <ellipse cx="60" cy="44" rx="4.5" ry="5" fill="#1f2937"/>
+  <!-- Eye shine -->
+  <circle cx="41.5" cy="43" r="2" fill="white"/>
+  <circle cx="61.5" cy="43" r="2" fill="white"/>
+  <circle cx="39" cy="45" r="0.8" fill="white" opacity="0.5"/>
+  <circle cx="59" cy="45" r="0.8" fill="white" opacity="0.5"/>
+  <!-- Pretty lashes -->
+  <path d="M34 42 L32 40" stroke="#1f2937" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M36 41 L34.5 39" stroke="#1f2937" stroke-width="1" stroke-linecap="round"/>
+  <path d="M38 40.5 L37 38.5" stroke="#1f2937" stroke-width="0.8" stroke-linecap="round"/>
+  <path d="M66 42 L68 40" stroke="#1f2937" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M64 41 L65.5 39" stroke="#1f2937" stroke-width="1" stroke-linecap="round"/>
+  <path d="M62 40.5 L63 38.5" stroke="#1f2937" stroke-width="0.8" stroke-linecap="round"/>
+
+  <!-- Warm blush -->
+  <ellipse cx="32" cy="50" rx="5" ry="2.5" fill="#f97316" opacity="0.3"/>
+  <ellipse cx="68" cy="50" rx="5" ry="2.5" fill="#f97316" opacity="0.3"/>
+
+  <!-- Cute nose -->
+  <path d="M50 48 L50 52" stroke="#a8703c" stroke-width="1.5" stroke-linecap="round"/>
+  <ellipse cx="50" cy="53" rx="2.5" ry="1.5" fill="#a8703c"/>
+
+  <!-- Warm friendly smile -->
+  <path d="M44 58 Q50 63 56 58" stroke="#8b5a30" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M45 58 Q50 61 55 58" fill="#c27a50"/>
+
+  <!-- Cozy knit sweater -->
+  <path d="M24 82 Q24 66 40 64 L50 70 L60 64 Q76 66 76 82 L76 100 L24 100 Z" fill="#7c3aed"/>
+  <!-- V-neck detail -->
+  <path d="M40 64 Q50 76 60 64" fill="#6d28d9"/>
+  <!-- White shirt peek -->
+  <path d="M44 66 Q50 72 56 66" fill="#fefce8"/>
+  <!-- Sweater knit texture -->
+  <path d="M30 74 Q34 80 30 86" stroke="#6d28d9" stroke-width="1.5" fill="none"/>
+  <path d="M70 74 Q66 80 70 86" stroke="#6d28d9" stroke-width="1.5" fill="none"/>
+</svg>

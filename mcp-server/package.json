@@ -1,0 +1,31 @@
+{
+  "name": "prepspsc-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for PrepSPSC PYQ API — search 7,400+ SPSC previous year questions, generate mock tests, track progress",
+  "type": "module",
+  "bin": {
+    "prepspsc-mcp": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "prepspsc",
+    "sikkim-psc",
+    "pyq",
+    "exam-prep",
+    "ai-tools"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  }
+}

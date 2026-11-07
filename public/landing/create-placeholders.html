@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Mockup Placeholders</title>
+</head>
+<body>
+    <script>
+        // Create gradient placeholder images
+        const mockups = [
+            { name: 'dashboard', gradient: 'linear-gradient(135deg, #2dd4bf 0%, #22d3ee 100%)' },
+            { name: 'timer', gradient: 'linear-gradient(135deg, #f97316 0%, #ef4444 100%)' },
+            { name: 'rooms', gradient: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)' },
+            { name: 'achievements', gradient: 'linear-gradient(135deg, #eab308 0%, #f97316 100%)' }
+        ];
+
+        mockups.forEach(mockup => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1200;
+            canvas.height = 800;
+            const ctx = canvas.getContext('2d');
+            
+            // Create gradient
+            const grad = ctx.createLinearGradient(0, 0, 1200, 800);
+            if (mockup.gradient.includes('#2dd4bf')) {
+                grad.addColorStop(0, '#2dd4bf');
+                grad.addColorStop(1, '#22d3ee');
+            } else if (mockup.gradient.includes('#f97316')) {
+                grad.addColorStop(0, '#f97316');
+                grad.addColorStop(1, '#ef4444');
+            } else if (mockup.gradient.includes('#a855f7')) {
+                grad.addColorStop(0, '#a855f7');
+                grad.addColorStop(1, '#ec4899');
+            } else {
+                grad.addColorStop(0, '#eab308');
+                grad.addColorStop(1, '#f97316');
+            }
+            
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 1200, 800);
+            
+            // Add text
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.font = 'bold 72px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(mockup.name.toUpperCase(), 600, 400);
+            
+            // Download
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = mockup.name + '-mockup.png';
+                a.click();
+            });
+        });
+        
+        document.body.innerHTML = '<h1>Mockup images generated! Check your downloads folder.</h1>';
+    </script>
+</body>
+</html>
