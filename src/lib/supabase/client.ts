@@ -1,4 +1,5 @@
 import { createBrowserClient } from "@supabase/ssr";
+import { fetchSignupWithTimeout } from "@/lib/auth-requests";
 
 // Singleton instance to avoid multiple clients competing for browser locks
 let browserClient: ReturnType<typeof createBrowserClient<any>> | null = null;
@@ -29,6 +30,7 @@ export function createClient(): ReturnType<typeof createBrowserClient<any>> {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
+        global: { fetch: fetchSignupWithTimeout },
         auth: {
           // Use no-op lock to prevent AbortError from Navigator Lock API
           // This is safe because we're using a singleton pattern

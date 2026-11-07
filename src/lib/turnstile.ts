@@ -17,6 +17,7 @@ export async function verifyTurnstileToken(token: string, ip?: string): Promise<
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: formData.toString(),
+        signal: AbortSignal.timeout(10_000),
       }
     );
 

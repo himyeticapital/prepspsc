@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
+import { fetchAuthPreflight } from "@/lib/auth-requests";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,8 @@ import { Mail, Chrome, Loader2, ArrowRight, User, Lock, AlertCircle, Check, Phon
 import { isDisposableDomain } from "@/lib/disposable-domains";
 import { getFirebaseAuth, RecaptchaVerifier, signInWithPhoneNumber } from "@/lib/firebase";
 import type { ConfirmationResult } from "firebase/auth";
+
+const SIGNUP_UNCONFIRMED_MESSAGE = "We could not confirm whether your account was created. Check your email for a confirmation link or try signing in before trying again.";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -38,6 +41,7 @@ export default function SignupPage() {
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [otpCooldown, setOtpCooldown] = useState(0);
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  const [captchaAttempt, setCaptchaAttempt] = useState(0);
 
   // Common typos in popular email domains
   const DOMAIN_TYPO_CORRECTIONS: Record<string, string> = {
@@ -198,97 +202,115 @@ export default function SignupPage() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    let stage: "validation" | "captcha" | "signup" = "validation";
+    let captchaAttempted = false;
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      setIsLoading(false);
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
-      setIsLoading(false);
-      return;
-    }
-
-    // Validate email format
-    const emailValidationError = validateEmail(email);
-    if (emailValidationError) {
-      setError(emailValidationError);
-      setIsLoading(false);
-      return;
-    }
-
-    // Verify CAPTCHA
-    if (turnstileToken) {
-      const captchaRes = await fetch("/api/auth/verify-captcha", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: turnstileToken }),
-      });
-      if (!captchaRes.ok) {
-        if (captchaRes.status === 429) {
-          setError("Too many attempts. Please wait a few minutes and try again.");
-        } else if (captchaRes.status === 503) {
-          setError("Service temporarily unavailable. Please try again in a moment.");
-        } else {
-          setError("CAPTCHA verification failed. Please try again.");
-        }
-        setTurnstileToken(null);
-        setIsLoading(false);
-        return;
-      }
-    }
-
-    // Server-side email validation (MX records + disposable domain check)
     try {
-      const emailCheckRes = await fetch("/api/auth/validate-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
-      });
-      if (!emailCheckRes.ok) {
-        const emailCheckData = await emailCheckRes.json();
-        setError(emailCheckData.error || "Email validation failed. Please use a valid email address.");
-        setIsLoading(false);
+      if (password !== confirmPassword) {
+        setError("Passwords do not match");
         return;
       }
-    } catch {
-      // If validation endpoint is down, allow through rather than blocking
-    }
 
-    const cleaned = phone.replace(/[\s\-]/g, "").replace(/^\+91/, "").replace(/^91/, "").replace(/^0/, "");
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-          phone_number: `+91${cleaned}`,
-          phone_verified: true,
+      if (password.length < 6) {
+        setError("Password must be at least 6 characters");
+        return;
+      }
+
+      // Validate email format
+      const emailValidationError = validateEmail(email);
+      if (emailValidationError) {
+        setError(emailValidationError);
+        return;
+      }
+
+      // Verify CAPTCHA
+      if (turnstileToken) {
+        stage = "captcha";
+        captchaAttempted = true;
+        const captchaRes = await fetchAuthPreflight("/api/auth/verify-captcha", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: turnstileToken }),
+        });
+        if (!captchaRes.ok) {
+          if (captchaRes.status === 429) {
+            setError("Too many attempts. Please wait a few minutes and try again.");
+          } else if (captchaRes.status === 503) {
+            setError("Service temporarily unavailable. Please try again in a moment.");
+          } else {
+            setError("CAPTCHA verification failed. Please try again.");
+          }
+          return;
+        }
+      }
+
+      // Server-side email validation (MX records + disposable domain check)
+      stage = "validation";
+      try {
+        const emailCheckRes = await fetchAuthPreflight("/api/auth/validate-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email.trim() }),
+        });
+        if (!emailCheckRes.ok) {
+          const emailCheckData = await emailCheckRes.json();
+          setError(emailCheckData.error || "Email validation failed. Please use a valid email address.");
+          return;
+        }
+      } catch {
+        // If validation endpoint is down, allow through rather than blocking
+      }
+
+      const cleaned = phone.replace(/[\s\-]/g, "").replace(/^\+91/, "").replace(/^91/, "").replace(/^0/, "");
+      stage = "signup";
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            phone_number: `+91${cleaned}`,
+            phone_verified: true,
+          },
+          emailRedirectTo: `${window.location.origin}/callback?redirect=/onboarding`,
         },
-        emailRedirectTo: `${window.location.origin}/callback?redirect=/onboarding`,
-      },
-    });
+      });
 
-    if (error) {
-      setError(error.message);
+      if (error) {
+        console.error("Signup request failed", { stage, error: error.name, status: error.status });
+        setError(error.name === "AuthRetryableFetchError"
+          ? SIGNUP_UNCONFIRMED_MESSAGE
+          : error.message);
+        return;
+      }
+
+      // Detect duplicate email: Supabase returns a user with empty identities
+      if (data.user && data.user.identities && data.user.identities.length === 0) {
+        setError("An account with this email already exists. Please sign in instead.");
+        return;
+      }
+
+      // Log signup IP (fire-and-forget, don't block signup flow)
+      fetch("/api/auth/log-signup-ip", { method: "POST" }).catch(() => {});
+
+      setMessage("Check your email for the confirmation link!");
+    } catch (err) {
+      // Log the stage, never the form values or CAPTCHA token.
+      console.error("Signup request failed", {
+        stage,
+        error: err instanceof Error ? err.name : "UnknownError",
+      });
+      setError(stage === "signup"
+        ? SIGNUP_UNCONFIRMED_MESSAGE
+        : "Could not connect to CAPTCHA verification. Please check your connection and try again.");
+    } finally {
       setIsLoading(false);
-      return;
+      if (captchaAttempted) {
+        // Turnstile tokens are single-use, including when a later step fails.
+        setTurnstileToken(null);
+        setCaptchaAttempt((attempt) => attempt + 1);
+      }
     }
-
-    // Detect duplicate email: Supabase returns a user with empty identities
-    if (data.user && data.user.identities && data.user.identities.length === 0) {
-      setError("An account with this email already exists. Please sign in instead.");
-      setIsLoading(false);
-      return;
-    }
-
-    // Log signup IP (fire-and-forget, don't block signup flow)
-    fetch("/api/auth/log-signup-ip", { method: "POST" }).catch(() => {});
-
-    setMessage("Check your email for the confirmation link!");
-    setIsLoading(false);
   };
 
   const handleGoogleSignup = async () => {
@@ -568,6 +590,7 @@ export default function SignupPage() {
             </div>
 
             <Turnstile
+              key={captchaAttempt}
               onVerify={handleTurnstileVerify}
               onExpire={handleTurnstileExpire}
               className="mb-4 flex justify-center"
