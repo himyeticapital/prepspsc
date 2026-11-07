@@ -39,7 +39,7 @@
     "@radix-ui/react-switch": "^1.2.6",
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-tooltip": "^1.2.8",
-    "@remotion/bundler": "^4.0.435",
+    "@remotion/bundler": "^4.0.540",
     "@remotion/cli": "^4.0.435",
     "@remotion/renderer": "^4.0.435",
     "@supabase/ssr": "^0.8.0",
