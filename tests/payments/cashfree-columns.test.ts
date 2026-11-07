@@ -18,6 +18,7 @@ beforeEach(() => {
   vi.stubEnv("CASHFREE_APP_ID", "test-app");
   vi.stubEnv("CASHFREE_SECRET_KEY", "test-secret");
   vi.stubEnv("CASHFREE_ENV", "production");
+  vi.stubEnv("NEXT_PUBLIC_ALL_FEATURES_FREE", "false"); // exercise the paid Pro checkout
   mocks.client.auth.getUser.mockResolvedValue({ data: { user: { id: userId, email: "test@example.test" } } });
   mocks.client.from.mockImplementation((table: string) => {
     const query: Record<string, unknown> = {};

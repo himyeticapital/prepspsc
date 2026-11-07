@@ -20,10 +20,12 @@ beforeEach(async () => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date("2026-10-19T04:00:00Z"));
   vi.spyOn(console, "error").mockImplementation(() => {});
+  vi.stubEnv("KV_REST_API_URL", "https://redis.example.test");
+  vi.stubEnv("KV_REST_API_TOKEN", "test-token");
   limitMock.mockReset().mockRejectedValue(new Error("Redis DNS unavailable"));
   ({ applyRateLimit } = await import("@/lib/rate-limit"));
 });
-afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); });
+afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllEnvs(); });
 
 describe("CAPTCHA rate limiting during Redis outages", () => {
   it("lets CAPTCHA verification proceed when Redis is unavailable", async () => {
