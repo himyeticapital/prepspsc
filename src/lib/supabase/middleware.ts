@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { isPresetAvatar } from "@/lib/avatars";
+import { loadOnboardingState } from "@/lib/onboarding";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -35,6 +35,13 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Redirects must carry session refresh cookies too, or the next request can appear signed out.
+  const redirectWithSession = (url: URL) => {
+    const response = NextResponse.redirect(url);
+    supabaseResponse.cookies.getAll().forEach(cookie => response.cookies.set(cookie));
+    return response;
+  };
+
   // Admin auth routes (no auth required, outside admin layout)
   const adminAuthRoutes = ["/admin-auth/login", "/admin-auth/reset-password"];
   const isAdminAuthRoute = adminAuthRoutes.some((route) =>
@@ -57,21 +64,16 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("redirect", request.nextUrl.pathname);
-    return NextResponse.redirect(url);
+    return redirectWithSession(url);
   }
 
-  // Enforce avatar selection: authenticated users on protected routes must have a preset avatar
+  // A saved avatar alone can belong to a half-saved onboarding attempt.
   if (isProtectedRoute && user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("avatar_url")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || !isPresetAvatar(profile.avatar_url)) {
+    const state = await loadOnboardingState(supabase, user.id).catch(() => null);
+    if (!state?.complete) {
       const url = request.nextUrl.clone();
       url.pathname = "/onboarding";
-      return NextResponse.redirect(url);
+      return redirectWithSession(url);
     }
   }
 
@@ -79,7 +81,7 @@ export async function updateSession(request: NextRequest) {
   if (isAdminRoute && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin-auth/login";
-    return NextResponse.redirect(url);
+    return redirectWithSession(url);
   }
 
   // Check admin access for authenticated users
@@ -93,7 +95,7 @@ export async function updateSession(request: NextRequest) {
     if (!profile || !["admin", "teacher"].includes(profile.role)) {
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";
-      return NextResponse.redirect(url);
+      return redirectWithSession(url);
     }
   }
 
@@ -108,7 +110,7 @@ export async function updateSession(request: NextRequest) {
     if (profile && ["admin", "teacher"].includes(profile.role)) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin";
-      return NextResponse.redirect(url);
+      return redirectWithSession(url);
     }
   }
 
@@ -121,7 +123,7 @@ export async function updateSession(request: NextRequest) {
   if (isAuthRoute && user) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
+    return redirectWithSession(url);
   }
 
   return supabaseResponse;

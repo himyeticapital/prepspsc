@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -14,6 +14,8 @@ import { ExamSelector } from "@/components/ui/exam-selector";
 import { cn } from "@/lib/utils";
 import { getFirebaseAuth, RecaptchaVerifier, signInWithPhoneNumber } from "@/lib/firebase";
 import type { ConfirmationResult } from "firebase/auth";
+import { FirebaseError } from "firebase/app";
+import { loadOnboardingState, saveOnboardingProfile } from "@/lib/onboarding";
 
 // Telegram bot username (set in environment)
 const TELEGRAM_BOT_USERNAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "PrepSPSCBot";
@@ -32,6 +34,7 @@ export default function OnboardingPage() {
   const [usernameError, setUsernameError] = useState<string | null>(null);
 
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Multi-step state: "profile" -> "bot" -> redirect
   const [currentStep, setCurrentStep] = useState<"profile" | "bot">("profile");
@@ -49,9 +52,17 @@ export default function OnboardingPage() {
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [otpCooldown, setOtpCooldown] = useState(0);
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  const recaptchaRef = useRef<RecaptchaVerifier | null>(null);
 
-  useEffect(() => {
-    const checkUser = async () => {
+  useEffect(() => () => {
+    recaptchaRef.current?.clear();
+    recaptchaRef.current = null;
+  }, []);
+
+  const checkUser = useCallback(async () => {
+    setIsLoading(true);
+    setLoadError(null);
+    try {
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
@@ -61,20 +72,8 @@ export default function OnboardingPage() {
 
       setUserId(user.id);
 
-      // Get current profile to pre-fill username and check phone
-      const [{ data: profile }, { data: privateProfile }] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select("username, avatar_url")
-          .eq("id", user.id)
-          .single(),
-        // Phone numbers are private: only the user (and admins) can read them
-        supabase
-          .from("profile_private")
-          .select("phone_number")
-          .eq("id", user.id)
-          .maybeSingle(),
-      ]);
+      const { profile, privateProfile } = await loadOnboardingState(supabase, user.id);
+      if (!profile) throw new Error("Could not load your profile. Please try again.");
 
       if (profile) {
         setUsername(profile.username || user.email?.split("@")[0] || "");
@@ -83,16 +82,19 @@ export default function OnboardingPage() {
           setSelectedAvatar(profile.avatar_url);
         }
         // Check if user needs phone verification (Google OAuth users)
-        if (!privateProfile?.phone_number) {
-          setNeedsPhone(true);
-        }
+        setNeedsPhone(!privateProfile?.phone_number || !profile.phone_verified);
+        if (privateProfile?.phone_number) setPhone(privateProfile.phone_number);
       }
-
+    } catch {
+      setLoadError("Could not load your profile. Please check your connection and try again.");
+    } finally {
       setIsLoading(false);
-    };
-
-    checkUser();
+    }
   }, [supabase, router]);
+
+  useEffect(() => {
+    checkUser();
+  }, [checkUser]);
 
   // Debounced username availability check
   useEffect(() => {
@@ -157,11 +159,12 @@ export default function OnboardingPage() {
   };
 
   const setupRecaptcha = () => {
-    if (!(window as any).recaptchaVerifier) {
-      (window as any).recaptchaVerifier = new RecaptchaVerifier(getFirebaseAuth(), "recaptcha-container-onboarding", {
+    if (!recaptchaRef.current) {
+      recaptchaRef.current = new RecaptchaVerifier(getFirebaseAuth(), "recaptcha-container-onboarding", {
         size: "invisible",
       });
     }
+    return recaptchaRef.current;
   };
 
   const handleSendOtp = async () => {
@@ -173,10 +176,10 @@ export default function OnboardingPage() {
     setIsSendingOtp(true);
     setOtpError(null);
     try {
-      setupRecaptcha();
+      const verifier = setupRecaptcha();
       const cleaned = phone.replace(/[\s\-]/g, "").replace(/^\+91/, "").replace(/^91/, "").replace(/^0/, "");
       const fullPhone = `+91${cleaned}`;
-      const result = await signInWithPhoneNumber(getFirebaseAuth(), fullPhone, (window as any).recaptchaVerifier);
+      const result = await signInWithPhoneNumber(getFirebaseAuth(), fullPhone, verifier);
       setConfirmationResult(result);
       setOtpSent(true);
       setOtpCooldown(30);
@@ -186,15 +189,17 @@ export default function OnboardingPage() {
           return prev - 1;
         });
       }, 1000);
-    } catch (error: any) {
-      if (error.code === "auth/too-many-requests") {
+    } catch (error) {
+      const code = error instanceof FirebaseError ? error.code : null;
+      if (code === "auth/too-many-requests") {
         setOtpError("Too many attempts. Please try again later.");
-      } else if (error.code === "auth/invalid-phone-number") {
+      } else if (code === "auth/invalid-phone-number") {
         setOtpError("Invalid phone number. Please check and try again.");
       } else {
-        setOtpError(`Failed to send OTP: ${error.code || error.message}`);
+        setOtpError("Failed to send OTP. Please try again.");
       }
-      (window as any).recaptchaVerifier = null;
+      recaptchaRef.current?.clear();
+      recaptchaRef.current = null;
     } finally {
       setIsSendingOtp(false);
     }
@@ -207,10 +212,11 @@ export default function OnboardingPage() {
     try {
       await confirmationResult.confirm(otp);
       setPhoneVerified(true);
-    } catch (error: any) {
-      if (error.code === "auth/invalid-verification-code") {
+    } catch (error) {
+      const code = error instanceof FirebaseError ? error.code : null;
+      if (code === "auth/invalid-verification-code") {
         setOtpError("Invalid OTP. Please check and try again.");
-      } else if (error.code === "auth/code-expired") {
+      } else if (code === "auth/code-expired") {
         setOtpError("OTP expired. Please request a new one.");
         setOtpSent(false);
       } else {
@@ -235,52 +241,25 @@ export default function OnboardingPage() {
 
     setIsSaving(true);
 
-    // Prepare update data
-    const updateData: Record<string, unknown> = {
-      avatar_url: selectedAvatar,
-      username: username.toLowerCase().replace(/\s+/g, "_"),
-    };
-
-    // Save phone number if verified during onboarding (Google OAuth users)
-    let verifiedPhone: string | null = null;
-    if (needsPhone && phoneVerified && phone) {
-      const cleaned = phone.replace(/[\s\-]/g, "").replace(/^\+91/, "").replace(/^91/, "").replace(/^0/, "");
-      verifiedPhone = `+91${cleaned}`;
-      updateData.phone_verified = true;
-    }
-
-    // Include exams if any were selected
-    if (preparingFor.length > 0) {
-      updateData.preparing_for = preparingFor;
-    }
-
-    const { error } = await supabase
-      .from("profiles")
-      .update(updateData)
-      .eq("id", userId);
-
-    if (error) {
-      console.error("Error updating profile:", error);
-      setSaveError("Failed to save profile. Please try again.");
-      setIsSaving(false);
-      return;
-    }
-
-    if (verifiedPhone) {
-      const { error: phoneError } = await supabase
-        .from("profile_private")
-        .upsert({ id: userId, phone_number: verifiedPhone }, { onConflict: "id" });
-      if (phoneError) {
-        console.error("Error saving phone number:", phoneError);
-        setSaveError("Failed to save your phone number. Please try again.");
-        setIsSaving(false);
-        return;
+    try {
+      let verifiedPhone: string | null = null;
+      if (needsPhone && phoneVerified && phone) {
+        const cleaned = phone.replace(/[\s\-]/g, "").replace(/^\+91/, "").replace(/^91/, "").replace(/^0/, "");
+        verifiedPhone = `+91${cleaned}`;
       }
+      await saveOnboardingProfile(supabase, userId, {
+        avatar: selectedAvatar,
+        username,
+        preparingFor,
+        needsPhone,
+        verifiedPhone,
+      });
+      setCurrentStep("bot");
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "Failed to save your profile. Please try again.");
+    } finally {
+      setIsSaving(false);
     }
-
-    // Move to bot step
-    setIsSaving(false);
-    setCurrentStep("bot");
   };
 
   // Handle bot step completion
@@ -306,6 +285,15 @@ export default function OnboardingPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6 text-center">
+        <p role="alert" className="text-destructive">{loadError}</p>
+        <Button onClick={checkUser}>Try again</Button>
       </div>
     );
   }

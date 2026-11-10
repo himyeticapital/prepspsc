@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Turnstile } from "@/components/ui/turnstile";
 import { Chrome, Loader2, ArrowRight, FlaskConical } from "lucide-react";
-import { isPresetAvatar } from "@/lib/avatars";
+import { loadOnboardingState } from "@/lib/onboarding";
 
 function LoginForm() {
   const router = useRouter();
@@ -77,16 +77,12 @@ function LoginForm() {
         return;
       }
 
-      // Check if user has completed onboarding (has valid preset avatar)
+      // Check the saved phone too, including previously half-saved Google accounts.
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("avatar_url")
-          .eq("id", user.id)
-          .single();
-
-        if (!isPresetAvatar(profile?.avatar_url)) {
+        const { complete } = await loadOnboardingState(supabase, user.id);
+        if (!complete) {
+          router.refresh();
           router.push("/onboarding");
           return;
         }
@@ -95,7 +91,7 @@ function LoginForm() {
       // Use router.refresh() to update server state, then redirect
       router.refresh();
       router.push(redirectTo);
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.");
       setIsLoading(false);
     }
@@ -118,7 +114,7 @@ function LoginForm() {
         setIsGoogleLoading(false);
       }
       // Note: On success, browser will redirect to Google, so loading stays true
-    } catch (err) {
+    } catch {
       setError("Failed to connect to Google. Please try again.");
       setIsGoogleLoading(false);
     }
@@ -143,7 +139,7 @@ function LoginForm() {
       } else {
         setMessage("Password reset link sent to your email!");
       }
-    } catch (err) {
+    } catch {
       setError("Failed to send reset email. Please try again.");
     } finally {
       setIsResettingPassword(false);

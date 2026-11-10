@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
-import { isPresetAvatar } from "@/lib/avatars";
+import { loadOnboardingState } from "@/lib/onboarding";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -17,11 +17,10 @@ export async function GET(request: Request) {
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("id, avatar_url")
-          .eq("id", user.id)
-          .single();
+        const state = await loadOnboardingState(supabase, user.id).catch(() => null);
+        // A read failure should be retried on onboarding, not treated as a missing row.
+        if (!state) return NextResponse.redirect(`${origin}/onboarding`);
+        const { profile, complete } = state;
 
         if (!profile) {
           // Create profile for new user (fallback - trigger usually handles this)
@@ -34,15 +33,15 @@ export async function GET(request: Request) {
           // Phone numbers are private (profile_private), not on the public profile
           await supabase.from("profile_private").upsert(
             { id: user.id, phone_number: user.user_metadata?.phone_number || null },
-            { onConflict: "id" }
+            { onConflict: "id", ignoreDuplicates: true }
           );
 
           // Redirect new users to onboarding to select avatar
           return NextResponse.redirect(`${origin}/onboarding`);
         }
 
-        // Any user without a valid preset avatar must complete onboarding
-        if (!isPresetAvatar(profile.avatar_url)) {
+        // Recover half-saved profiles even when the avatar was already saved.
+        if (!complete) {
           return NextResponse.redirect(`${origin}/onboarding`);
         }
       }
@@ -74,7 +73,7 @@ export async function GET(request: Request) {
 
               if (!isPrivateIp) {
                 try {
-                  const ipRes = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,regionName,city,proxy,hosting`);
+                  const ipRes = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,regionName,city,proxy,hosting`, { signal: AbortSignal.timeout(2_000) });
                   const ipData = await ipRes.json();
                   if (ipData.status === "success") {
                     isVpn = ipData.proxy === true || ipData.hosting === true;
